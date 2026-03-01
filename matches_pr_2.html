@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مخطط مباريات League 2 | القائمة الجديدة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --gold: #c39738; --text: #f8fafc; --accent: #38bdf8; }
+        body { margin: 0; font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; }
+        
+        header { background: #16213e; padding: 20px; text-align: center; border-bottom: 4px solid var(--gold); }
+        
+        /* شريط اختيار اللاعبين العلوي */
+        .players-bar { 
+            display: flex; overflow-x: auto; gap: 10px; padding: 15px; 
+            background: rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid rgba(195,151,56,0.2);
+            scrollbar-width: thin; scrollbar-color: var(--gold) transparent;
+        }
+        .player-btn { 
+            flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; 
+            cursor: pointer; transition: 0.3s; padding: 10px; border-radius: 12px; 
+            border: 2px solid transparent; min-width: 85px;
+        }
+        .player-btn:hover { background: rgba(255,255,255,0.05); }
+        .player-btn.active { border-color: var(--gold); background: rgba(195, 151, 56, 0.15); transform: scale(1.05); }
+        .player-btn img { width: 40px; height: 40px; object-fit: contain; background: #fff; border-radius: 50%; padding: 2px; margin-bottom: 5px; }
+        .player-btn span { font-size: 0.7rem; font-weight: bold; text-align: center; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px 50px; }
+        
+        .info-header { text-align: center; margin-bottom: 30px; display: none; animation: fadeIn 0.5s; }
+        .info-header img { width: 80px; height: 80px; border: 3px solid var(--gold); border-radius: 50%; padding: 5px; background: #fff; }
+
+        /* قائمة المباريات */
+        .fixtures-list { display: grid; gap: 12px; }
+        .match-row { 
+            background: var(--card); border-radius: 12px; padding: 15px; 
+            display: flex; align-items: center; justify-content: space-between;
+            border-right: 5px solid var(--gold); transition: 0.2s;
+        }
+        .match-row:hover { background: #2d3748; transform: translateX(-5px); }
+
+        .side { display: flex; align-items: center; gap: 10px; width: 40%; }
+        .side.left { justify-content: flex-start; }
+        .side.right { justify-content: flex-end; }
+        .side img { width: 30px; height: 30px; object-fit: contain; background: #fff; border-radius: 50%; padding: 2px; }
+        .side span { font-size: 0.85rem; font-weight: bold; }
+
+        .vs-box { text-align: center; width: 20%; }
+        .vs-tag { background: #000; color: var(--gold); padding: 3px 10px; border-radius: 5px; font-size: 0.7rem; font-weight: 900; border: 1px solid var(--gold); }
+        .round-num { display: block; font-size: 0.65rem; color: var(--accent); margin-top: 5px; font-weight: bold; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { height: 5px; }
+        ::-webkit-scrollbar-thumb { background: var(--gold); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1 style="margin:0; font-size: 1.5rem;">🏆 نظام مواجهات LEAGUE 2</h1>
+    <p style="margin:5px 0 0; opacity: 0.7; font-size: 0.8rem;">اختر الفريق لمشاهدة جدول مبارياته الكامل</p>
+</header>
+
+<div class="players-bar" id="playersBar"></div>
+
+<div class="container">
+    <div id="infoHeader" class="info-header">
+        <img id="currentImg" src="">
+        <h2 id="currentTitle" style="margin:10px 0 5px;"></h2>
+        <div style="color:var(--gold); font-weight:bold; font-size:0.9rem;">جدول الموسم الكامل (30 جولة منظمة)</div>
+    </div>
+
+    <div id="fixturesContainer" class="fixtures-list">
+        <div style="text-align: center; padding: 50px; opacity: 0.4;">
+            <h3>⬅️ اختر فريقاً من الشريط العلوي لعرض مواجهاته</h3>
+        </div>
+    </div>
+</div>
+
+<script>
+// القائمة الجديدة للفرق التي أرسلتها
+const players = [
+    { id: "XONE22", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v6/Competitors/132" },
+    { id: "TEDL_A_OUTI", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v33/Competitors/226" },
+    { id: "Islam safti", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v3/Competitors/8225" },
+    { id: "Ko", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v9/Competitors/134" },
+    { id: "Ben dahe", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v1/Competitors/28701" },
+    { id: "Bahi", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v1/Competitors/8212" },
+    { id: "wassim", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v8/Competitors/104" },
+    { id: "x-mehdi_8", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v7/Competitors/480" },
+    { id: "RahimDzz", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v3/Competitors/8220" },
+    { id: "brahim_cj", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v3/Competitors/8223" },
+    { id: "Chouaib Hk", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v8/Competitors/690" },
+    { id: "Brahim", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v2/Competitors/10213" },
+    { id: "Bahi47", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v2/Competitors/8219" },
+    { id: "Saleh47M", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v24/Competitors/108" },
+    { id: "Brahim47", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v4/Competitors/9035" },
+    { id: "shanks_08", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v5/Competitors/888" }
+];
+
+// توليد الجدول العالمي لضمان عدم التضارب (خوارزمية Round Robin)
+function generateGlobalSchedule() {
+    let temp = [...players];
+    let rounds = temp.length - 1;
+    let half = temp.length / 2;
+    let schedule = [];
+
+    for (let r = 0; r < rounds; r++) {
+        for (let i = 0; i < half; i++) {
+            schedule.push({
+                round: r + 1,
+                home: temp[i],
+                away: temp[temp.length - 1 - i]
+            });
+        }
+        temp.splice(1, 0, temp.pop()); // تدوير العناصر مع تثبيت الأول
+    }
+    return schedule;
+}
+
+const fullData = generateGlobalSchedule();
+
+// بناء الشريط العلوي
+const bar = document.getElementById('playersBar');
+players.forEach((p) => {
+    const d = document.createElement('div');
+    d.className = 'player-btn';
+    d.onclick = () => filterFixtures(p.id, d);
+    d.innerHTML = `<img src="${p.logo}"><span>${p.id}</span>`;
+    bar.appendChild(d);
+});
+
+function filterFixtures(playerId, btn) {
+    // تفعيل الزر المختار
+    document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const pData = players.find(p => p.id === playerId);
+    document.getElementById('infoHeader').style.display = 'block';
+    document.getElementById('currentImg').src = pData.logo;
+    document.getElementById('currentTitle').innerText = pData.id;
+
+    // جلب مباريات اللاعب (ذهاب وإياب)
+    let myMatches = fullData.filter(m => m.home.id === playerId || m.away.id === playerId);
+    
+    let html = "";
+    // عرض مباريات الذهاب (1-15)
+    myMatches.forEach(m => {
+        html += renderMatchHTML(m.round, m.home, m.away);
+    });
+
+    // عرض مباريات الإياب (16-30) بتبديل الخصوم
+    myMatches.forEach(m => {
+        html += renderMatchHTML(m.round + 15, m.away, m.home);
+    });
+
+    document.getElementById('fixturesContainer').innerHTML = html;
+    // نزول تلقائي لعرض النتائج
+    window.scrollTo({top: 150, behavior: 'smooth'});
+}
+
+function renderMatchHTML(round, h, a) {
+    return `
+        <div class="match-row">
+            <div class="side left"><img src="${h.logo}"><span>${h.id}</span></div>
+            <div class="vs-box">
+                <span class="vs-tag">VS</span>
+                <span class="round-num">الجولة ${round}</span>
+            </div>
+            <div class="side right"><span>${a.id}</span><img src="${a.logo}"></div>
+        </div>
+    `;
+}
+</script>
+</body>
+</html>

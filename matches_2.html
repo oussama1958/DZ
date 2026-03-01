@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جدول الدوري الاحترافي | League 1</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0f172a; --card: #1e293b; --gold: #c39738; --text: #f8fafc; }
+        body { margin: 0; font-family: 'Cairo', sans-serif; background: var(--bg); color: var(--text); direction: rtl; }
+        header { background: #16213e; padding: 20px; text-align: center; border-bottom: 4px solid var(--gold); position: sticky; top: 0; z-index: 1000; }
+        .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
+        
+        .round-box { background: rgba(255,255,255,0.02); border-radius: 15px; padding: 20px; margin-bottom: 40px; border: 1px solid rgba(195,151,56,0.2); }
+        .round-header { background: var(--gold); color: #000; padding: 8px 25px; border-radius: 50px; display: inline-block; margin-bottom: 20px; font-weight: 900; box-shadow: 0 4px 15px rgba(195,151,56,0.3); }
+        
+        .matches-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
+        .match-card { background: var(--card); border-radius: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05); }
+        
+        .team { display: flex; align-items: center; gap: 10px; width: 42%; }
+        .team img { width: 32px; height: 32px; object-fit: contain; background: #fff; border-radius: 50%; padding: 2px; }
+        .team span { font-size: 0.8rem; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .vs { background: #000; color: var(--gold); padding: 4px 10px; border-radius: 6px; font-weight: 900; font-size: 0.7rem; border: 1px solid var(--gold); }
+        
+        .phase-title { text-align: center; color: var(--gold); font-size: 2rem; margin: 40px 0; text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🏆 LEAGUE 2 - الجدول الرسمي</h1>
+    <p>30 جولة منظمة (8 مباريات متزامنة لكل جولة)</p>
+</header>
+
+<div class="container" id="mainContainer"></div>
+
+<script>
+// القائمة الجديدة للفرق التي زودتني بها
+const players = [
+    { id: "XONE22", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v6/Competitors/132" },
+    { id: "TEDL_A_OUTI", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v33/Competitors/226" },
+    { id: "Islam safti", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v3/Competitors/8225" },
+    { id: "Ko", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v9/Competitors/134" },
+    { id: "Ben dahe", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v1/Competitors/28701" },
+    { id: "Bahi", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v1/Competitors/8212" },
+    { id: "wassim", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v8/Competitors/104" },
+    { id: "x-mehdi_8", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v7/Competitors/480" },
+    { id: "RahimDzz", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v3/Competitors/8220" },
+    { id: "brahim_cj", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v3/Competitors/8223" },
+    { id: "Chouaib Hk", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v8/Competitors/690" },
+    { id: "Brahim", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v2/Competitors/10213" },
+    { id: "Bahi47", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v2/Competitors/8219" },
+    { id: "Saleh47M", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v24/Competitors/108" },
+    { id: "Brahim47", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v4/Competitors/9035" },
+    { id: "shanks_08", logo: "https://imagecache.365scores.com/image/upload/f_png,w_24,h_24,c_limit,q_auto:eco,dpr_3,d_Competitors:default1.png/v5/Competitors/888" }
+];
+
+function generateLeagueStructure() {
+    let tempPlayers = [...players];
+    let totalRounds = tempPlayers.length - 1;
+    let matchesPerRound = tempPlayers.length / 2;
+    let fullSchedule = [];
+
+    for (let r = 0; r < totalRounds; r++) {
+        let roundMatches = [];
+        for (let m = 0; m < matchesPerRound; m++) {
+            roundMatches.push({
+                home: tempPlayers[m],
+                away: tempPlayers[tempPlayers.length - 1 - m]
+            });
+        }
+        fullSchedule.push(roundMatches);
+        
+        // تدوير اللاعبين (الخوارزمية الدائرية)
+        tempPlayers.splice(1, 0, tempPlayers.pop());
+    }
+    return fullSchedule;
+}
+
+const schedule = generateLeagueStructure();
+const container = document.getElementById('mainContainer');
+
+function render() {
+    let html = '<h2 class="phase-title">ذهاب الدوري (الجولات 1-15)</h2>';
+    
+    // عرض الذهاب
+    schedule.forEach((round, i) => {
+        html += `<div class="round-box">
+            <div class="round-header">الجولة ${i+1}</div>
+            <div class="matches-grid">`;
+        round.forEach(m => {
+            html += `<div class="match-card">
+                <div class="team"><img src="${m.home.logo}"><span>${m.home.id}</span></div>
+                <div class="vs">VS</div>
+                <div class="team" style="justify-content:flex-end"><span>${m.away.id}</span><img src="${m.away.logo}"></div>
+            </div>`;
+        });
+        html += `</div></div>`;
+    });
+
+    html += '<h2 class="phase-title">إياب الدوري (الجولات 16-30)</h2>';
+
+    // عرض الإياب (عكس الذهاب)
+    schedule.forEach((round, i) => {
+        html += `<div class="round-box">
+            <div class="round-header">الجولة ${i+16}</div>
+            <div class="matches-grid">`;
+        round.forEach(m => {
+            html += `<div class="match-card">
+                <div class="team"><img src="${m.away.logo}"><span>${m.away.id}</span></div>
+                <div class="vs">VS</div>
+                <div class="team" style="justify-content:flex-end"><span>${m.home.id}</span><img src="${m.home.logo}"></div>
+            </div>`;
+        });
+        html += `</div></div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+render();
+</script>
+</body>
+</html>
