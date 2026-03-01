@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دوري أبطال DZ | المجموعات والإقصائيات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ucl-blue: #001021; --ucl-accent: #004e92; --ucl-gold: #c39738;
+            --ucl-text: #ffffff; --card-bg: rgba(255, 255, 255, 0.05);
+        }
+        body {
+            margin: 0; font-family: 'Cairo', sans-serif;
+            background: radial-gradient(circle at top, #001a33, var(--ucl-blue));
+            color: var(--ucl-text); min-height: 100vh; direction: rtl;
+        }
+        header { text-align: center; padding: 20px 10px; background: rgba(0,0,0,0.5); border-bottom: 2px solid var(--ucl-gold); }
+        h1 { margin: 0; font-size: 1.4rem; color: var(--ucl-gold); text-transform: uppercase; }
+
+        .nav-container { display: flex; justify-content: center; gap: 10px; margin: 20px auto; max-width: 500px; padding: 0 15px; }
+        .nav-btn {
+            flex: 1; padding: 12px; border: 1px solid var(--ucl-gold); background: transparent;
+            color: var(--ucl-gold); cursor: pointer; border-radius: 10px; font-weight: bold; font-family: 'Cairo', sans-serif;
+        }
+        .nav-btn.active { background: var(--ucl-gold); color: #000; box-shadow: 0 0 15px rgba(195, 151, 56, 0.4); }
+
+        .container { max-width: 1200px; margin: auto; padding: 0 15px 50px; }
+        .tab-content { display: none; }
+        .active-section { display: block !important; animation: fadeIn 0.5s ease; }
+
+        /* جداول المجموعات */
+        .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .group-card { background: var(--card-bg); border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); overflow: hidden; }
+        .group-name { background: rgba(0,0,0,0.4); padding: 10px; text-align: center; color: var(--ucl-gold); font-weight: bold; border-bottom: 1px solid var(--ucl-gold); }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: rgba(255,255,255,0.03); color: #94a3b8; padding: 10px 5px; }
+        td { padding: 12px 5px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .team-td { text-align: right; display: flex; align-items: center; gap: 10px; padding-right: 12px; }
+        .logo { width: 25px; height: 25px; object-fit: contain; background: #fff; border-radius: 50%; padding: 2px; }
+        .pts-bold { font-weight: bold; color: var(--ucl-gold); font-size: 1rem; }
+
+        /* الإقصائيات */
+        .stage-title { text-align: center; color: var(--ucl-gold); margin: 30px 0 15px; font-size: 1.2rem; }
+        .match-card {
+            background: var(--card-bg); margin: 10px auto; max-width: 600px;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px; border-radius: 10px; border-right: 4px solid var(--ucl-gold);
+        }
+        .score-box { background: #000; color: var(--ucl-gold); padding: 5px 12px; border-radius: 5px; font-weight: bold; font-size: 1.1rem; min-width: 50px; text-align: center; }
+        .team-box { width: 40%; display: flex; align-items: center; gap: 8px; }
+        .team-box.left { justify-content: flex-start; }
+        .team-box.right { justify-content: flex-end; text-align: left; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<header><h1>CHAMPIONS LEAGUE DZ</h1></header>
+
+<div class="nav-container">
+    <button class="nav-btn active" onclick="toggleView('groups', this)">المجموعات</button>
+    <button class="nav-btn" onclick="toggleView('knockout', this)">الإقصائيات</button>
+</div>
+
+
+
+<div class="container">
+    <div id="groups-section" class="tab-content active-section">
+        <div id="groupsContainer" class="group-grid"></div>
+    </div>
+
+    <div id="knockout-section" class="tab-content">
+        <div id="knockoutContainer"></div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0",
+        authDomain: "cluuuub-90ab9.firebaseapp.com",
+        projectId: "cluuuub-90ab9"
+    });
+    const db = firebase.firestore();
+
+    function toggleView(view, btn) {
+        document.getElementById('groups-section').classList.remove('active-section');
+        document.getElementById('knockout-section').classList.remove('active-section');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(view + '-section').classList.add('active-section');
+        btn.classList.add('active');
+    }
+
+    function loadGroups() {
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+        const container = document.getElementById('groupsContainer');
+        container.innerHTML = "";
+
+        letters.forEach(L => {
+            const card = document.createElement('div');
+            card.className = 'group-card';
+            card.innerHTML = `
+                <div class="group-name">المجموعة ${L}</div>
+                <table>
+                    <thead><tr><th style="text-align:right; padding-right:15px">الفريق</th><th>لعب</th><th>+/-</th><th>ن</th></tr></thead>
+                    <tbody id="group-body-${L}"></tbody>
+                </table>
+            `;
+            container.appendChild(card);
+
+            // تم إضافة حماية: إذا فشل الترتيب (بسبب الـ Index)، سيجلب البيانات ويرتبها برمجياً
+            db.collection("ucl_groups").where("group", "==", L)
+            .onSnapshot(snap => {
+                const tbody = document.getElementById(`group-body-${L}`);
+                if (!tbody) return;
+                
+                let teams = [];
+                snap.forEach(doc => teams.push({ id: doc.id, ...doc.data() }));
+
+                // ترتيب يدوي لضمان الظهور حتى لو لم يتم تفعيل الـ Index في Firebase
+                teams.sort((a, b) => {
+                    if (b.points !== a.points) return b.points - a.points;
+                    let gdA = a.gd !== undefined ? a.gd : ((a.goalsFor || 0) - (a.goalsAgainst || 0));
+                    let gdB = b.gd !== undefined ? b.gd : ((b.goalsFor || 0) - (b.goalsAgainst || 0));
+                    return gdB - gdA;
+                });
+
+                tbody.innerHTML = "";
+                if (teams.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="opacity:0.5; padding:15px">لا توجد فرق</td></tr>`;
+                }
+
+                teams.forEach(t => {
+                    let gd = t.gd !== undefined ? t.gd : ((t.goalsFor || 0) - (t.goalsAgainst || 0));
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><div class="team-td"><img src="${t.logo}" class="logo"><span>${t.name}</span></div></td>
+                            <td>${t.played || 0}</td>
+                            <td style="color:${gd > 0 ? '#10b981' : gd < 0 ? '#f43f5e' : '#94a3b8'}">${gd > 0 ? '+' : ''}${gd}</td>
+                            <td class="pts-bold">${t.points || 0}</td>
+                        </tr>
+                    `;
+                });
+            });
+        });
+    }
+
+    function loadKnockout() {
+        const stages = { "16": "دور الـ 16", "8": "ربع النهائي", "4": "نصف النهائي", "2": "النهائي" };
+        const container = document.getElementById('knockoutContainer');
+        container.innerHTML = "";
+
+        Object.keys(stages).forEach(key => {
+            const stageDiv = document.createElement('div');
+            stageDiv.innerHTML = `<div class="stage-title">${stages[key]}</div><div id="m-stage-${key}"></div>`;
+            container.appendChild(stageDiv);
+
+            db.collection("ucl_knockout").where("stage", "==", key).onSnapshot(snap => {
+                const mContainer = document.getElementById(`m-stage-${key}`);
+                mContainer.innerHTML = "";
+                snap.forEach(doc => {
+                    const m = doc.data();
+                    mContainer.innerHTML += `
+                        <div class="match-card">
+                            <div class="team-box left"><img src="${m.t1Logo}" class="logo"> <span>${m.t1Name}</span></div>
+                            <div class="score-box">${m.score1} - ${m.score2}</div>
+                            <div class="team-box right"><span>${m.t2Name}</span> <img src="${m.t2Logo}" class="logo"></div>
+                        </div>
+                    `;
+                });
+            });
+        });
+    }
+
+    loadGroups();
+    loadKnockout();
+</script>
+</body>
+</html>
