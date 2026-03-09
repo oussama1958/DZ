@@ -3,170 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CHAMPIONS LEAGUE DZ | الدردشة</title>
+    <title>CHAMPIONS LEAGUE DZ | غرفة الدردشة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary: #0ea5e9;
             --bg: #0f172a;
-            --sidebar-bg: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.9);
+            --sidebar-bg: #16213e;
             --text: #f8fafc;
             --text-muted: #94a3b8;
-            --border: rgba(51, 65, 85, 0.5);
-            --mine-msg: #0284c7;
-            --other-msg: #334155;
+            --border: rgba(51, 65, 85, 0.6);
+            --accent: #fbbf24;
+            --danger: #ef4444;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
 
-        body, html {
-            margin: 0; padding: 0; height: 100%; width: 100%;
+        body {
+            margin: 0; 
+            padding: 0;
             font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: var(--bg); color: var(--text);
-            overflow: hidden;
+            background: var(--bg);
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                              radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%);
+            color: var(--text); 
+            height: 100vh; /* ملء الشاشة */
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; /* منع الصفحة كاملة من التمرير */
         }
 
-        .app-container { display: flex; height: 100vh; width: 100vw; position: relative; }
+        /* --- Sidebar & Toggle --- */
+        .menu-toggle { position: fixed; top: 12px; right: 12px; z-index: 1001; background: var(--primary); color: white; border: none; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .sidebar { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--sidebar-bg); z-index: 9999; border-left: 3px solid var(--primary); padding: 30px 15px; display: flex; flex-direction: column; }
+        .sidebar.active { right: 0; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); z-index: 9998; display: none; }
+        .overlay.active { display: block; }
 
-        /* --- القائمة الجانبية (تصميم صغير وجميل) --- */
-        .players-sidebar {
-            width: 260px; background: var(--sidebar-bg);
-            border-left: 1px solid var(--border);
-            display: flex; flex-direction: column;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 3000;
+        .sidebar-header { text-align: center; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 15px; }
+        .user-nav-img { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--primary); background: #fff; object-fit: cover; margin-bottom: 10px; }
+        .nav-item { color: var(--text); text-decoration: none; padding: 12px 15px; display: flex; align-items: center; gap: 10px; border-radius: 10px; font-weight: 500; margin-bottom: 5px; }
+        .nav-item:hover, .nav-item.active-link { background: rgba(14, 165, 233, 0.2); color: var(--primary); }
+
+        /* --- Chat Layout --- */
+        .chat-container {
+            flex: 1; /* يأخذ كل المساحة المتاحة بين الهيدر ومنطقة الإدخال */
+            display: flex; 
+            flex-direction: column; 
+            margin-top: 65px; 
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            overflow: hidden; /* مهم جداً */
         }
 
-        .sidebar-header {
-            padding: 15px; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: center;
+        .chat-header { 
+            padding: 10px 20px; 
+            background: rgba(14, 165, 233, 0.1); 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            flex-shrink: 0; /* منع الهيدر من الانضغاط */
+        }
+        .chat-header h2 { margin: 0; font-size: 1.1rem; color: var(--primary); }
+
+        /* منطقة الرسائل (هي الوحيدة التي تمرر) */
+        #chatMessages { 
+            flex: 1; 
+            padding: 15px; 
+            overflow-y: auto; /* تمكين التمرير هنا فقط */
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px;
+            -webkit-overflow-scrolling: touch; /* تمرير سلس على الآيفون */
         }
 
-        /* زر الإغلاق داخل القائمة */
-        .close-sidebar {
-            background: rgba(239, 68, 68, 0.1); color: #ef4444;
-            border: none; width: 30px; height: 30px; border-radius: 8px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        /* --- Message Bubbles --- */
+        .msg { display: flex; gap: 10px; max-width: 85%; animation: fadeIn 0.2s ease; }
+        .msg.mine { align-self: flex-end; flex-direction: row-reverse; }
+        .msg-img { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--primary); background: #fff; object-fit: cover; flex-shrink: 0; }
+        .msg-content { display: flex; flex-direction: column; }
+        .msg-sender { font-size: 0.75rem; font-weight: bold; color: var(--accent); margin-bottom: 2px; }
+        .msg-text { 
+            padding: 10px 15px; border-radius: 18px; font-size: 0.95rem; 
+            background: rgba(255,255,255,0.08); border: 1px solid var(--border); 
+            color: var(--text); word-break: break-word; line-height: 1.4;
+        }
+        .mine .msg-text { background: var(--primary); color: white; border: none; border-bottom-right-radius: 4px; }
+        .msg:not(.mine) .msg-text { border-bottom-left-radius: 4px; }
+        .msg-time { font-size: 0.65rem; color: var(--text-muted); margin-top: 4px; align-self: flex-end; }
+
+        /* --- Input Area (ثابتة في الأسفل تماماً) --- */
+        .chat-input-area { 
+            padding: 15px; 
+            background: #1e293b; 
+            display: flex; 
+            gap: 10px; 
+            border-top: 2px solid var(--primary);
+            flex-shrink: 0; /* لا تسمح للمنطقة بالاختفاء */
+            padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* دعم الهواتف الحديثة والـ Notch */
+        }
+        
+        #msgInput { 
+            flex: 1; 
+            background: var(--bg); 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            padding: 12px 15px; 
+            color: white; 
+            outline: none; 
+            font-size: 16px; /* حجم 16 يمنع الـ Zoom التلقائي في Safari */
+            height: 50px;
         }
 
-        /* --- منطقة الدردشة --- */
-        .chat-main {
-            flex: 1; display: flex; flex-direction: column;
-            background: var(--bg); position: relative; min-width: 0;
+        .send-btn { 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            width: 50px; 
+            height: 50px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-size: 1.3rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
         }
 
-        .chat-header {
-            height: 60px; padding: 0 15px;
-            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; gap: 12px; flex-shrink: 0;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .menu-btn {
-            background: var(--primary); color: white; border: none;
-            width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
+        @media (max-width: 480px) {
+            .chat-container { margin-top: 60px; }
         }
-
-        #chatMessages {
-            flex: 1; overflow-y: auto; padding: 15px 15px 100px; /* مسافة إضافية في الأسفل للكتابة */
-            display: flex; flex-direction: column; gap: 10px;
-        }
-
-        /* --- فقاعات الرسائل --- */
-        .msg { max-width: 80%; display: flex; flex-direction: column; }
-        .msg.mine { align-self: flex-end; }
-        .msg.others { align-self: flex-start; }
-
-        .msg-bubble {
-            padding: 10px 14px; border-radius: 18px; font-size: 0.9rem;
-            line-height: 1.4; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .mine .msg-bubble { background: var(--mine-msg); border-bottom-right-radius: 4px; }
-        .others .msg-bubble { background: var(--other-msg); border-bottom-left-radius: 4px; }
-
-        /* --- خانة الكتابة (موقع ثابت وجميل) --- */
-        .input-wrapper {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            padding: 15px; background: linear-gradient(transparent, var(--bg) 40%);
-            pointer-events: none; /* للسماح بالضغط على الرسائل خلف التدرج */
-        }
-
-        .input-container {
-            max-width: 800px; margin: 0 auto;
-            background: #1e293b; border: 1px solid var(--border);
-            border-radius: 25px; padding: 5px 5px 5px 15px;
-            display: flex; align-items: center; gap: 10px;
-            pointer-events: auto; /* إعادة تفعيل الضغط */
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-        }
-
-        #msgInput {
-            flex: 1; background: none; border: none; color: white;
-            padding: 10px 0; outline: none; font-size: 16px;
-        }
-
-        .send-btn {
-            width: 40px; height: 40px; border-radius: 50%;
-            background: var(--primary); border: none; color: white;
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: transform 0.2s;
-        }
-        .send-btn:active { transform: scale(0.9); }
-
-        /* --- تعديلات الهاتف --- */
-        @media (max-width: 768px) {
-            .players-sidebar {
-                position: absolute; right: 0; top: 0; bottom: 0;
-                transform: translateX(100%); /* مخفية افتراضياً */
-            }
-            .players-sidebar.active { transform: translateX(0); }
-            .input-wrapper { padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        }
-
-        .player-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 15px; cursor: pointer; transition: 0.2s;
-        }
-        .player-item:hover { background: rgba(255,255,255,0.05); }
-        .player-item.active { background: rgba(14, 165, 233, 0.15); color: var(--primary); }
-        .p-img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <aside class="players-sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <span style="font-weight: bold; font-size: 0.9rem;">قائمة اللاعبين</span>
-            <button class="close-sidebar" onclick="toggleMenu()"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="playersList" style="flex:1; overflow-y:auto;">
-            </div>
-        <div style="padding: 15px;">
-            <a href="index.html" style="display: block; text-align: center; color: var(--text-muted); text-decoration: none; font-size: 0.8rem;">
-                <i class="fas fa-home"></i> العودة للرئيسية
-            </a>
-        </div>
-    </aside>
+<button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <main class="chat-main">
-        <header class="chat-header">
-            <button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-users-cog"></i></button>
-            <img id="headerImg" src="https://cdn-icons-png.flaticon.com/512/1165/1165248.png" style="width:32px; height:32px; border-radius:50%;">
-            <div id="headerName" style="font-weight: bold; font-size: 0.9rem;">الدردشة العامة</div>
-        </header>
-
-        <div id="chatMessages">
-            </div>
-
-        <div class="input-wrapper">
-            <div class="input-container">
-                <input type="text" id="msgInput" placeholder="اكتب رسالة..." autocomplete="off">
-                <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
-            </div>
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div id="authAction">
+            <a href="login.html" class="nav-item" style="background:var(--primary); justify-content:center; color:white;">🔐 دخول اللاعبين</a>
         </div>
-    </main>
+        <div id="userInfo" style="display: none; flex-direction: column; align-items: center;">
+            <img id="navUserImg" src="" class="user-nav-img">
+            <span id="navUserName" style="font-weight: bold; color: var(--accent);"></span>
+            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.8rem; text-decoration:none; margin-top:10px;"><i class="fas fa-sign-out-alt"></i> خروج</a>
+        </div>
+    </div>
+    <div class="nav-links">
+        <a class='nav-item' href='index.html'><i class="fas fa-home"></i> الرئيسية</a>
+        <a class='nav-item active-link' href='chat.html'><i class="fas fa-comments"></i> الدردشة</a>
+        <a class='nav-item' href='ucl.html'><i class="fas fa-star"></i> دوري الأبطال</a>
+        <a class='nav-item' href='cup.html'><i class="fas fa-trophy"></i> الكأس</a>
+    </div>
+</nav>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <h2><i class="fas fa-comments"></i> دردشة اللاعبين</h2>
+        <span id="onlineStatus" style="font-size: 0.7rem; color: #10b981;"><i class="fas fa-circle"></i> متصل</span>
+    </div>
+
+    <div id="chatMessages"></div>
+
+    <div class="chat-input-area">
+        <input type="text" id="msgInput" placeholder="اكتب رسالتك..." onkeypress="if(event.key === 'Enter') sendMessage()">
+        <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -179,111 +187,76 @@
         projectId: "cluuuub-90ab9"
     });
     const db = firebase.firestore();
-
     let currentUserData = null;
-    let currentChatMode = "global"; 
-    let unsubscribeMessages = null;
 
-    function toggleMenu() {
+    function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
     }
 
-    async function init() {
+    async function checkAuth() {
         const loggedPlayer = localStorage.getItem("activePlayer");
-        if (!loggedPlayer) { window.location.href = "login.html"; return; }
-
-        const snap = await db.collection("teams").where("playerTeamName", "==", loggedPlayer).get();
-        if (!snap.empty) {
-            currentUserData = snap.docs[0].data();
-            currentUserData.id = snap.docs[0].id;
-            loadPlayers();
-            loadMessages();
+        if (loggedPlayer) {
+            const snap = await db.collection("teams").where("playerTeamName", "==", loggedPlayer).get();
+            if (!snap.empty) {
+                currentUserData = snap.docs[0].data();
+                document.getElementById("authAction").style.display = "none";
+                document.getElementById("userInfo").style.display = "flex";
+                document.getElementById("navUserName").innerText = currentUserData.playerTeamName;
+                document.getElementById("navUserImg").src = currentUserData.clubLogo || 'https://via.placeholder.com/80';
+            }
+        } else {
+            document.getElementById("msgInput").placeholder = "يجب تسجيل الدخول أولاً...";
+            document.getElementById("msgInput").disabled = true;
         }
-    }
-
-    function loadPlayers() {
-        db.collection("teams").onSnapshot(snap => {
-            const list = document.getElementById("playersList");
-            list.innerHTML = `
-                <div class="player-item ${currentChatMode === 'global' ? 'active' : ''}" onclick="switchChat('global', 'الدردشة العامة', 'https://cdn-icons-png.flaticon.com/512/1165/1165248.png')">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1165/1165248.png" class="p-img">
-                    <div style="font-size: 0.85rem;">الدردشة العامة</div>
-                </div>`;
-
-            snap.forEach(doc => {
-                const p = doc.data();
-                if (p.playerTeamName !== currentUserData.playerTeamName) {
-                    list.innerHTML += `
-                        <div class="player-item ${currentChatMode === doc.id ? 'active' : ''}" onclick="switchChat('${doc.id}', '${p.playerTeamName}', '${p.clubLogo}')">
-                            <img src="${p.clubLogo || 'https://via.placeholder.com/35'}" class="p-img">
-                            <div style="font-size: 0.85rem;">${p.playerTeamName}</div>
-                        </div>`;
-                }
-            });
-        });
-    }
-
-    function switchChat(id, name, img) {
-        currentChatMode = id;
-        document.getElementById("headerName").innerText = name;
-        document.getElementById("headerImg").src = img;
-        if(window.innerWidth < 768) toggleMenu();
-        loadMessages();
     }
 
     async function sendMessage() {
-        const val = document.getElementById("msgInput").value.trim();
-        if (!val || !currentUserData) return;
-
-        const data = {
-            text: val,
-            senderId: currentUserData.id,
-            senderName: currentUserData.playerTeamName,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        if (currentChatMode === "global") {
-            await db.collection("global_chat").add(data);
-        } else {
-            data.chatPath = [currentUserData.id, currentChatMode].sort().join("_");
-            await db.collection("private_chats").add(data);
-        }
-        document.getElementById("msgInput").value = "";
+        const text = document.getElementById("msgInput").value.trim();
+        if (!text || !currentUserData) return;
+        try {
+            await db.collection("global_chat").add({
+                text: text,
+                senderName: currentUserData.playerTeamName,
+                senderLogo: currentUserData.clubLogo,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            document.getElementById("msgInput").value = "";
+            // التمرير لأسفل بعد الإرسال
+            const chatBox = document.getElementById("chatMessages");
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (e) { console.error(e); }
     }
 
     function loadMessages() {
-        if (unsubscribeMessages) unsubscribeMessages();
-
-        let query = db.collection("global_chat").orderBy("timestamp", "asc");
-        if (currentChatMode !== "global") {
-            const path = [currentUserData.id, currentChatMode].sort().join("_");
-            query = db.collection("private_chats").where("chatPath", "==", path).orderBy("timestamp", "asc");
-        }
-
-        unsubscribeMessages = query.onSnapshot(snap => {
-            const box = document.getElementById("chatMessages");
-            box.innerHTML = "";
-            snap.forEach(doc => {
+        db.collection("global_chat").orderBy("timestamp", "asc").onSnapshot(snapshot => {
+            const chatBox = document.getElementById("chatMessages");
+            chatBox.innerHTML = "";
+            snapshot.forEach(doc => {
                 const m = doc.data();
-                const isMine = m.senderId === currentUserData.id;
+                const isMine = m.senderName === (currentUserData ? currentUserData.playerTeamName : "");
                 const time = m.timestamp ? new Date(m.timestamp.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
-
-                box.innerHTML += `
-                    <div class="msg ${isMine ? 'mine' : 'others'}">
-                        ${!isMine && currentChatMode === 'global' ? `<span style="font-size:0.7rem; color:var(--primary); margin-bottom:2px; margin-right:8px;">${m.senderName}</span>` : ''}
-                        <div class="msg-bubble">${m.text}</div>
-                        <div style="font-size: 0.6rem; opacity: 0.5; margin: 2px 5px;">${time}</div>
+                chatBox.innerHTML += `
+                    <div class="msg ${isMine ? 'mine' : ''}">
+                        <img src="${m.senderLogo || 'https://via.placeholder.com/40'}" class="msg-img">
+                        <div class="msg-content">
+                            <span class="msg-sender">${m.senderName}</span>
+                            <div class="msg-text">${m.text}</div>
+                            <span class="msg-time">${time}</span>
+                        </div>
                     </div>`;
             });
-            box.scrollTop = box.scrollHeight;
+            // النزول لآخر رسالة تلقائياً
+            chatBox.scrollTop = chatBox.scrollHeight;
         });
     }
 
-    document.getElementById("msgInput").addEventListener("keypress", (e) => {
-        if(e.key === "Enter") sendMessage();
-    });
+    function logout() {
+        localStorage.removeItem("activePlayer");
+        window.location.reload();
+    }
 
-    init();
+    checkAuth().then(() => { loadMessages(); });
 </script>
 </body>
 </html>
