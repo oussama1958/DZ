@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | إطلاق الأخبار</title>
+    <style>
+        :root { --primary: #e53e3e; --bg: #0f172a; --card: #1e293b; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        
+        .admin-box { background: var(--card); padding: 20px; border-radius: 20px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #334155; }
+        
+        h2 { text-align: center; color: var(--primary); margin-bottom: 20px; font-size: 1.5rem; }
+
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-size: 0.9rem; color: #94a3b8; }
+        
+        select, button { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 1rem; outline: none; }
+        
+        .preview-area { background: #000; padding: 12px; border-radius: 10px; margin-top: 10px; border-right: 4px solid var(--primary); font-style: italic; color: #fbd38d; min-height: 50px; font-size: 0.9rem; }
+
+        .btn-fire { background: var(--primary); border: none; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.2s; }
+        .btn-fire:active { transform: scale(0.95); }
+
+        .success-msg { color: #48bb78; text-align: center; font-weight: bold; margin-top: 10px; display: none; padding: 10px; border-radius: 8px; border: 1px solid #48bb78; }
+        
+        .loading { text-align: center; color: #a0aec0; padding: 20px; }
+    </style>
+</head>
+<body>
+
+    <div id="loader" class="loading">جاري جلب قائمة المدربين...</div>
+
+    <div class="admin-box" id="adminContent" style="display:none;">
+        <h2>🚀 غرفة العمليات</h2>
+        
+        <div class="form-group">
+            <label>👤 المدرب القاصف:</label>
+            <select id="senderId" onchange="updatePreview()"></select>
+        </div>
+
+        <div class="form-group">
+            <label>🎯 المدرب المستهدف:</label>
+            <select id="targetId" onchange="updatePreview()"></select>
+        </div>
+
+        <div class="form-group">
+            <label>💣 نوع القذيفة:</label>
+            <select id="quoteIndex" onchange="updatePreview()"></select>
+        </div>
+
+        <label>👀 معاينة النص:</label>
+        <div class="preview-area" id="previewText">اختر المدربين للمعاينة...</div>
+
+        <button class="btn-fire" onclick="publishNews()">نشر الخبر الآن 🔥</button>
+        <div id="success" class="success-msg">✅ تم النشر بنجاح!</div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // إعدادات Firebase
+        const firebaseConfig = { apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0", projectId: "cluuuub-90ab9" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // نفس مصفوفة المقولات لضمان التوافق
+        const extremeQuotes = [
+            "المدرب [SenderCoach]: 'نادي [TargetClub] ليس فريقاً، هم مجرد حقل تجارب لخططي الجديدة'.",
+            "صرح [SenderCoach]: 'رأيت الخوف في عيون [TargetCoach]، إنه يرتجف كالطفل'.",
+            "قصف من [SenderCoach]: 'نادي [TargetClub] عبارة عن حطام كروي، مكانهم في مزبلة التاريخ'.",
+            "[SenderCoach] يستهزئ: 'المدرب [TargetCoach] لا يصلح حتى لجمع الكرات، تكتيكه مضحك'.",
+            "تصريح مهين: 'نادي [TargetClub] فريق رخيص يبحث عن الشهرة بمواجهتنا'.",
+            "[SenderCoach]: 'لو لعبت بفريق الأواسط سأذل [TargetClub]، هم بلا رجولة كروية'.",
+            "قنبلة: 'المدرب [TargetCoach] يتوسل للحكام دائماً لأنه يعلم أن فريقه بلا شرف'.",
+            "صرح [SenderCoach]: 'سأقوم بدعس كبرياء [TargetClub] المزيّف، سأجعلهم يبكون'.",
+            "[SenderCoach] بوقاحة: 'مستوى [TargetClub] تحت الصفر، مواجهتهم مضيعة للوقت'.",
+            "رسالة قاسية: 'المدرب [TargetCoach] شخص بلا كرامة، يتقاضى راتباً ليُهان'.",
+            "[SenderCoach]: 'سأقوم بإبادة أحلام [TargetClub]، سأريهم الفرق بين الأسياد والخدم'.",
+            "تصريح مستفز: 'المدرب [TargetCoach] يملك وجهاً نحساً، نادي [TargetClub] سيهبط بسببه'.",
+            "[SenderCoach]: 'لا أرى منافساً، أرى فقط حطاماً اسمه [TargetClub] ومدرباً فاشلاً'.",
+            "قصف جبهات: 'نادي [TargetClub] يشتري الحكام ونحن نشتري التاريخ'.",
+            "[SenderCoach]: 'المدرب [TargetCoach] يهرب كالفأر، سأحطم رأسه كروياً'.",
+            "تصريح ناري: 'فريق [TargetClub] بلا روح، سأدفنهم اليوم في الملعب'.",
+            "[SenderCoach]: 'سأعلم [TargetCoach] أصول اللعبة، يبدو أنه يشاهد الرسوم المتحركة كثيراً'.",
+            "إهانة مباشرة: 'نادي [TargetClub] وصمة عار، لو كنت مكانهم لانسحبت قبل الذل'.",
+            "[SenderCoach]: 'أريد من [TargetCoach] أن يجهز المناديل، لأن البكاء سيكون طويلاً'.",
+            "ختام القصف: 'لا يوجد فريق أرخص من [TargetClub]، سأجعلهم يزحفون خلفنا'."
+        ];
+
+        async function loadData() {
+            try {
+                const snap = await db.collection("teams").get();
+                const sSelect = document.getElementById("senderId");
+                const tSelect = document.getElementById("targetId");
+                const qSelect = document.getElementById("quoteIndex");
+
+                if (snap.empty) {
+                    document.getElementById("loader").innerText = "⚠️ لم يتم العثور على فرق في قاعدة البيانات!";
+                    return;
+                }
+
+                snap.forEach(doc => {
+                    const team = doc.data();
+                    const opt = `<option value="${doc.id}" data-coach="${team.playerTeamName}" data-club="${team.clubName}">${team.playerTeamName} (${team.clubName})</option>`;
+                    sSelect.innerHTML += opt;
+                    tSelect.innerHTML += opt;
+                });
+
+                extremeQuotes.forEach((q, i) => {
+                    qSelect.innerHTML += `<option value="${i}">قذيفة رقم ${i+1}</option>`;
+                });
+
+                document.getElementById("loader").style.display = "none";
+                document.getElementById("adminContent").style.display = "block";
+                updatePreview();
+            } catch (e) {
+                document.getElementById("loader").innerText = "❌ خطأ: " + e.message;
+            }
+        }
+
+        function updatePreview() {
+            const s = document.getElementById("senderId").options[document.getElementById("senderId").selectedIndex];
+            const t = document.getElementById("targetId").options[document.getElementById("targetId").selectedIndex];
+            const idx = document.getElementById("quoteIndex").value;
+
+            if (!s || !t) return;
+
+            let text = extremeQuotes[idx]
+                .replace(/\[SenderCoach\]/g, s.dataset.coach)
+                .replace(/\[TargetClub\]/g, t.dataset.club)
+                .replace(/\[TargetCoach\]/g, t.dataset.coach);
+
+            document.getElementById("previewText").innerText = text;
+        }
+
+        async function publishNews() {
+            const senderId = document.getElementById("senderId").value;
+            const targetId = document.getElementById("targetId").value;
+            const quoteIndex = parseInt(document.getElementById("quoteIndex").value);
+
+            if (senderId === targetId) {
+                alert("🚫 لا تقصف نفسك! اختر خصماً حقيقياً.");
+                return;
+            }
+
+            try {
+                await db.collection("hot_news").add({
+                    senderId: senderId,
+                    targetId: targetId,
+                    quoteIndex: quoteIndex,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                const success = document.getElementById("success");
+                success.style.display = "block";
+                setTimeout(() => { success.style.display = "none"; }, 3000);
+            } catch (e) {
+                alert("❌ فشل النشر: " + e.message);
+            }
+        }
+
+        loadData();
+    </script>
+</body>
+</html>
