@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CHAMPIONS LEAGUE DZ | إقصائيات الكأس</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -16,78 +16,73 @@
             --border: rgba(51, 65, 85, 0.5);
             --accent: #fbbf24;
             --danger: #ef4444;
-            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        * { box-sizing: border-box; transition: all 0.3s ease; }
+        * { box-sizing: border-box; transition: all 0.3s ease; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif;
             background: var(--bg);
             background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
                               radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%);
-            color: var(--text); min-height: 100vh; line-height: 1.6;
+            color: var(--text); min-height: 100vh; line-height: 1.4; overflow-x: hidden;
         }
 
-        /* --- Sidebar & Auth UI --- */
-        .menu-toggle { position: fixed; top: 20px; right: 20px; z-index: 1001; background: var(--primary); color: white; border: none; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .sidebar { position: fixed; top: 0; right: -320px; width: 300px; height: 100%; background: var(--sidebar-bg); z-index: 9999; border-left: 4px solid var(--primary); padding: 40px 20px; display: flex; flex-direction: column; }
+        /* --- Sidebar --- */
+        .menu-toggle { position: fixed; top: 15px; right: 15px; z-index: 1001; background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: var(--shadow); }
+        .sidebar { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--sidebar-bg); z-index: 9999; border-left: 3px solid var(--primary); padding: 30px 15px; display: flex; flex-direction: column; }
         .sidebar.active { right: 0; }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9998; display: none; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); z-index: 9998; display: none; }
         .overlay.active { display: block; }
 
-        .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        .user-nav-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); background: #fff; object-fit: cover; margin-bottom: 10px; }
-        .nav-item { color: var(--text); text-decoration: none; padding: 12px 15px; display: block; border-radius: 10px; font-weight: 500; margin-bottom: 5px; }
-        .nav-item:hover, .nav-item.active-link { background: rgba(14, 165, 233, 0.2); color: var(--primary); }
+        .sidebar-header { text-align: center; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 15px; }
+        .user-nav-img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary); background: #fff; object-fit: cover; margin-bottom: 8px; }
+        .nav-item { color: var(--text); text-decoration: none; padding: 10px 12px; display: flex; align-items: center; gap: 10px; border-radius: 8px; font-weight: 500; margin-bottom: 4px; font-size: 0.9rem; }
+        .nav-item:hover, .nav-item.active-link { background: rgba(14, 165, 233, 0.15); color: var(--primary); }
 
-        /* --- Header & Tabs --- */
-        .header { padding: 100px 20px 40px; text-align: center; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 30px; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        /* --- Header & Tabs (Mobile Optimized) --- */
+        .header { padding: 70px 15px 25px; text-align: center; }
+        .header h1 { font-size: 1.6rem; margin-bottom: 20px; color: white; }
         
-        .tabs { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 30px; background: rgba(15, 23, 42, 0.6); padding: 10px; border-radius: 25px; border: 1px solid var(--border); max-width: fit-content; margin-left: auto; margin-right: auto; }
-        .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 8px 18px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 0.9rem; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); }
+        .tabs-wrapper { overflow-x: auto; padding-bottom: 10px; -webkit-overflow-scrolling: touch; }
+        .tabs { display: inline-flex; gap: 6px; background: rgba(15, 23, 42, 0.6); padding: 5px; border-radius: 15px; border: 1px solid var(--border); min-width: max-content; margin: 0 auto; }
+        .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 7px 14px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.8rem; white-space: nowrap; }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        /* --- Content Layout --- */
-        .container { max-width: 850px; margin: 0 auto; padding: 0 20px 50px; }
+        /* --- Match Cards (Mobile Optimized) --- */
+        .container { max-width: 600px; margin: 0 auto; padding: 0 12px 80px; }
         .matches-container { display: none; }
-        .matches-container.active { display: block; animation: fadeIn 0.4s ease; }
+        .matches-container.active { display: block; animation: fadeIn 0.3s ease; }
 
         .match-card {
-            background: var(--card-bg);
-            margin-bottom: 15px;
-            padding: 18px 25px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
+            background: var(--card-bg); margin-bottom: 10px; padding: 12px 10px;
+            border-radius: 15px; display: flex; align-items: center;
+            justify-content: space-between; border: 1px solid var(--border);
+            backdrop-filter: blur(5px);
         }
-        .match-card:hover { border-color: var(--primary); transform: scale(1.01); }
 
-        .team { display: flex; align-items: center; gap: 15px; width: 40%; }
-        .team.left { justify-content: flex-start; }
-        .team.right { justify-content: flex-end; flex-direction: row-reverse; }
+        .team { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 35%; text-align: center; }
+        .team img { width: 38px; height: 38px; object-fit: contain; background: white; border: 1px solid var(--border); border-radius: 50%; padding: 3px; }
+        .team-name { font-weight: 600; font-size: 0.75rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
-        .team img { width: 45px; height: 45px; object-fit: contain; background: white; border: 2px solid var(--border); border-radius: 50%; padding: 4px; }
-        .team-name { font-weight: 600; font-size: 1rem; }
+        .score-area { flex: 1; text-align: center; }
+        .score-box { background: #0f172a; padding: 4px 10px; border-radius: 8px; font-size: 1.1rem; font-weight: 800; color: var(--accent); border: 1px solid rgba(14, 165, 233, 0.4); display: inline-block; }
+        .status { font-size: 8px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; }
 
-        .score-area { text-align: center; min-width: 100px; }
-        .score-box { background: var(--bg); padding: 6px 16px; border-radius: 12px; font-size: 22px; font-weight: 800; color: var(--accent); border: 1px solid var(--primary); }
-        .status { font-size: 10px; color: var(--text-muted); margin-top: 5px; letter-spacing: 1px; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 600px) {
-            .header h1 { font-size: 1.8rem; }
-            .team-name { font-size: 0.8rem; }
-            .team img { width: 35px; height: 35px; }
-            .score-box { font-size: 18px; padding: 4px 12px; }
-            .match-card { padding: 12px 15px; }
-            .tab-btn { padding: 6px 12px; font-size: 0.75rem; }
+        /* --- Floating Chat Button --- */
+        .floating-chat {
+            position: fixed; bottom: 20px; left: 20px;
+            width: 50px; height: 50px; background: var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.2rem; text-decoration: none;
+            box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4); z-index: 1000;
         }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Hide Scrollbar for Tabs */
+        .tabs-wrapper::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -95,33 +90,39 @@
 <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
+<a href="chat.html" class="floating-chat">
+    <i class="fas fa-comments"></i>
+</a>
+
 <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <div id="authAction">
-            <i class="fas fa-user-circle" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 10px;"></i>
-            <a href="login.html" class="nav-item" style="background:var(--primary); text-align:center; color:white;">🔐 دخول اللاعبين</a>
+            <a href="login.html" class="nav-item" style="background:var(--primary); justify-content:center; color:white;">🔐 دخول</a>
         </div>
         <div id="userInfo" style="display: none; flex-direction: column; align-items: center;">
             <img id="navUserImg" src="" class="user-nav-img">
-            <span id="navUserName" style="font-weight: bold; color: var(--accent);"></span>
-            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.8rem; text-decoration:none; margin-top:10px;"><i class="fas fa-sign-out-alt"></i> خروج</a>
+            <span id="navUserName" style="font-weight: bold; color: var(--accent); font-size: 0.9rem;"></span>
+            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.75rem; text-decoration:none; margin-top:8px;"><i class="fas fa-sign-out-alt"></i> خروج</a>
         </div>
     </div>
     <div class="nav-links">
         <a class='nav-item' href='index.html'><i class="fas fa-home"></i> الرئيسية</a>
         <a class='nav-item' href='ucl.html'><i class="fas fa-star"></i> دوري الأبطال</a>
         <a class='nav-item active-link' href='cup.html'><i class="fas fa-trophy"></i> الكأس</a>
+        <a class='nav-item' href='chat.html'><i class="fas fa-comments"></i> الدردشة</a>
     </div>
 </nav>
 
 <div class="header">
     <h1>🏆 إقصائيات الكأس</h1>
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showRound('round32', this)">دور الـ 32</button>
-        <button class="tab-btn" onclick="showRound('round16', this)">دور الـ 16</button>
-        <button class="tab-btn" onclick="showRound('round8', this)">ربع النهائي</button>
-        <button class="tab-btn" onclick="showRound('round4', this)">نصف النهائي</button>
-        <button class="tab-btn" onclick="showRound('round2', this)">النهائي</button>
+    <div class="tabs-wrapper">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showRound('round32', this)">دور 32</button>
+            <button class="tab-btn" onclick="showRound('round16', this)">دور 16</button>
+            <button class="tab-btn" onclick="showRound('round8', this)">الربع</button>
+            <button class="tab-btn" onclick="showRound('round4', this)">النصف</button>
+            <button class="tab-btn" onclick="showRound('round2', this)">النهائي</button>
+        </div>
     </div>
 </div>
 
@@ -137,7 +138,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-    // 1. Firebase Setup
     firebase.initializeApp({
         apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0",
         authDomain: "cluuuub-90ab9.firebaseapp.com",
@@ -145,7 +145,6 @@
     });
     const db = firebase.firestore();
 
-    // 2. UI & Tabs Functions
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('active');
         document.getElementById('overlay').classList.toggle('active');
@@ -158,13 +157,11 @@
         btn.classList.add('active');
     }
 
-    // 3. نظام تسجيل الدخول (نفس الكود السابق للربط)
     async function checkAuth() {
         const loggedPlayer = localStorage.getItem("activePlayer");
         if (loggedPlayer) {
             document.getElementById("authAction").style.display = "none";
             document.getElementById("userInfo").style.display = "flex";
-            
             const snap = await db.collection("teams").where("playerTeamName", "==", loggedPlayer).get();
             if (!snap.empty) {
                 const data = snap.docs[0].data();
@@ -174,12 +171,6 @@
         }
     }
 
-    function logout() {
-        localStorage.removeItem("activePlayer");
-        window.location.reload();
-    }
-
-    // 4. تحميل مباريات الكأس
     function loadCupMatches() {
         db.collection("cup_matches").onSnapshot(snapshot => {
             const rounds = ['round32', 'round16', 'round8', 'round4', 'round2'];
@@ -188,22 +179,19 @@
             snapshot.forEach(doc => {
                 const m = doc.data();
                 const container = document.getElementById(m.round);
-                
                 if (container) {
                     container.innerHTML += `
                         <div class="match-card">
-                            <div class="team left">
-                                <img src="${m.t1.logo}" onerror="this.src='https://via.placeholder.com/50'" alt="logo">
+                            <div class="team">
+                                <img src="${m.t1.logo}" onerror="this.src='https://via.placeholder.com/40'">
                                 <span class="team-name">${m.t1.name}</span>
                             </div>
-                            
                             <div class="score-area">
                                 <div class="score-box">${m.score1} - ${m.score2}</div>
                                 <div class="status">انتهت</div>
                             </div>
-
-                            <div class="team right">
-                                <img src="${m.t2.logo}" onerror="this.src='https://via.placeholder.com/50'" alt="logo">
+                            <div class="team">
+                                <img src="${m.t2.logo}" onerror="this.src='https://via.placeholder.com/40'">
                                 <span class="team-name">${m.t2.name}</span>
                             </div>
                         </div>
@@ -213,16 +201,19 @@
 
             rounds.forEach(r => {
                 if(document.getElementById(r).innerHTML === "") {
-                    document.getElementById(r).innerHTML = "<p style='text-align:center; color:var(--text-muted); margin-top:50px;'>لا توجد مباريات مسجلة حالياً في هذا الدور</p>";
+                    document.getElementById(r).innerHTML = "<p style='text-align:center; color:var(--text-muted); font-size:0.8rem; margin-top:30px;'>لا توجد مباريات بعد</p>";
                 }
             });
         });
     }
 
-    // تشغيل النظام
+    function logout() {
+        localStorage.removeItem("activePlayer");
+        window.location.reload();
+    }
+
     checkAuth();
     loadCupMatches();
 </script>
 </body>
-
 </html>

@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CHAMPIONS LEAGUE DZ | دوري الأبطال</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -16,59 +16,77 @@
             --border: rgba(51, 65, 85, 0.5);
             --accent: #fbbf24;
             --danger: #ef4444;
-            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
-        * { box-sizing: border-box; transition: all 0.3s ease; }
+        * { box-sizing: border-box; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
 
         body {
             margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif;
             background: var(--bg);
             background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
                               radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%);
-            color: var(--text); min-height: 100vh; line-height: 1.6;
+            color: var(--text); min-height: 100vh; line-height: 1.4;
+            overflow-x: hidden;
         }
 
-        /* --- Sidebar & Auth UI --- */
-        .menu-toggle { position: fixed; top: 20px; right: 20px; z-index: 1001; background: var(--primary); color: white; border: none; width: 45px; height: 45px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .sidebar { position: fixed; top: 0; right: -320px; width: 300px; height: 100%; background: var(--sidebar-bg); z-index: 9999; border-left: 4px solid var(--primary); padding: 40px 20px; display: flex; flex-direction: column; }
+        /* --- Sidebar & UI --- */
+        .menu-toggle { position: fixed; top: 15px; right: 15px; z-index: 1001; background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: var(--shadow); }
+        .sidebar { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: var(--sidebar-bg); z-index: 9999; border-left: 3px solid var(--primary); padding: 30px 15px; display: flex; flex-direction: column; }
         .sidebar.active { right: 0; }
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9998; display: none; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); z-index: 9998; display: none; }
         .overlay.active { display: block; }
 
-        .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        .user-nav-img { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--primary); background: #fff; object-fit: cover; margin-bottom: 10px; }
-        .nav-item { color: var(--text); text-decoration: none; padding: 12px 15px; display: block; border-radius: 10px; font-weight: 500; margin-bottom: 5px; }
-        .nav-item:hover, .nav-item.active-link { background: rgba(14, 165, 233, 0.2); color: var(--primary); }
+        .sidebar-header { text-align: center; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 15px; }
+        .user-nav-img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--primary); background: #fff; object-fit: cover; margin-bottom: 8px; }
+        .nav-item { color: var(--text); text-decoration: none; padding: 10px 12px; display: flex; align-items: center; gap: 10px; border-radius: 8px; font-weight: 500; margin-bottom: 4px; font-size: 0.9rem; }
+        .nav-item:hover, .nav-item.active-link { background: rgba(14, 165, 233, 0.15); color: var(--primary); }
+
+        /* --- Floating Chat --- */
+        .floating-chat {
+            position: fixed; bottom: 20px; left: 20px;
+            width: 50px; height: 50px; background: var(--primary);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 1.2rem; text-decoration: none;
+            box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4); z-index: 1000;
+        }
 
         /* --- UCL Content --- */
-        .header { padding: 100px 20px 40px; text-align: center; }
-        .header h1 { font-size: 2.5rem; margin-bottom: 30px; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .switch-container { display: inline-flex; background: rgba(15, 23, 42, 0.8); padding: 6px; border-radius: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .switch-btn { background: transparent; border: none; padding: 10px 25px; color: var(--text-muted); border-radius: 15px; cursor: pointer; font-weight: 700; }
+        .header { padding: 70px 15px 30px; text-align: center; }
+        .header h1 { font-size: 1.8rem; margin-bottom: 20px; background: linear-gradient(to bottom, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .switch-container { display: inline-flex; background: rgba(15, 23, 42, 0.8); padding: 4px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px; }
+        .switch-btn { background: transparent; border: none; padding: 8px 18px; color: var(--text-muted); border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 0.85rem; }
         .switch-btn.active { background: var(--primary); color: white; }
 
-        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px 50px; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 10px 80px; }
         .tab-content { display: none; }
-        .tab-content.active-section { display: block; animation: fadeIn 0.4s ease; }
+        .tab-content.active-section { display: block; animation: fadeIn 0.3s ease; }
 
-        /* --- Tables & Stats --- */
-        .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
-        .group-card { background: var(--card-bg); border-radius: 20px; border: 1px solid var(--border); padding: 15px; backdrop-filter: blur(10px); }
-        .group-name { color: var(--accent); font-weight: 800; text-align: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        /* --- Tables Responsive --- */
+        .group-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .group-card { background: var(--card-bg); border-radius: 15px; border: 1px solid var(--border); padding: 12px; backdrop-filter: blur(8px); }
+        .group-name { color: var(--accent); font-weight: 800; text-align: center; margin-bottom: 10px; font-size: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
         
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 8px 2px; }
-        td { padding: 10px 4px; border-bottom: 1px solid rgba(255,255,255,0.03); text-align: center; }
-        .team-logo-small { width: 22px; height: 22px; vertical-align: middle; margin-left: 5px; background: #fff; border-radius: 3px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th { color: var(--text-muted); border-bottom: 1px solid var(--border); padding: 8px 2px; font-size: 0.7rem; }
+        td { padding: 10px 2px; border-bottom: 1px solid rgba(255,255,255,0.03); text-align: center; }
+        .team-logo-small { width: 20px; height: 20px; vertical-align: middle; margin-left: 4px; background: #fff; border-radius: 3px; }
+        .team-name-cell { text-align: right; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-        /* --- Knockout Stages --- */
-        .stage-title { background: var(--primary); color: white; padding: 6px 18px; border-radius: 10px; display: inline-block; margin: 25px 0 15px; font-weight: bold; }
-        .match-card { background: var(--card-bg); border-radius: 15px; padding: 15px; margin-bottom: 10px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        .team-box { display: flex; align-items: center; gap: 10px; width: 40%; }
-        .score-box { background: var(--bg); padding: 5px 15px; border-radius: 8px; border: 1px solid var(--primary); color: var(--accent); font-weight: 800; font-size: 1.1rem; }
+        /* --- Knockout Stages Mobile --- */
+        .stage-title { background: var(--primary); color: white; padding: 5px 15px; border-radius: 8px; display: inline-block; margin: 20px 0 12px; font-weight: bold; font-size: 0.9rem; }
+        .match-card { background: var(--card-bg); border-radius: 12px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+        .team-box { display: flex; align-items: center; gap: 6px; width: 42%; font-size: 0.85rem; }
+        .team-box span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .score-box { background: var(--bg); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--primary); color: var(--accent); font-weight: 800; font-size: 0.95rem; min-width: 55px; text-align: center; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.5rem; }
+            .group-grid { grid-template-columns: 1fr; }
+            .team-box { font-size: 0.75rem; }
+        }
     </style>
 </head>
 <body>
@@ -76,27 +94,32 @@
 <button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
+<a href="chat.html" class="floating-chat" title="دردشة اللاعبين">
+    <i class="fas fa-comments"></i>
+</a>
+
 <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <div id="authAction">
-            <i class="fas fa-user-circle" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 10px;"></i>
-            <a href="login.html" class="nav-item" style="background:var(--primary); text-align:center; color:white;">🔐 دخول اللاعبين</a>
+            <i class="fas fa-user-circle" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 10px;"></i>
+            <a href="login.html" class="nav-item" style="background:var(--primary); justify-content:center; color:white;">🔐 دخول</a>
         </div>
         <div id="userInfo" style="display: none; flex-direction: column; align-items: center;">
             <img id="navUserImg" src="" class="user-nav-img">
-            <span id="navUserName" style="font-weight: bold; color: var(--accent);"></span>
-            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.8rem; text-decoration:none; margin-top:10px;"><i class="fas fa-sign-out-alt"></i> خروج</a>
+            <span id="navUserName" style="font-weight: bold; color: var(--accent); font-size: 0.9rem;"></span>
+            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.75rem; text-decoration:none; margin-top:10px;"><i class="fas fa-sign-out-alt"></i> خروج</a>
         </div>
     </div>
     <div class="nav-links">
         <a class='nav-item' href='index.html'><i class="fas fa-home"></i> الرئيسية</a>
         <a class='nav-item active-link' href='ucl.html'><i class="fas fa-star"></i> دوري الأبطال</a>
         <a class='nav-item' href='cup.html'><i class="fas fa-trophy"></i> الكأس</a>
+        <a class='nav-item' href='chat.html'><i class="fas fa-comments"></i> الدردشة</a>
     </div>
 </nav>
 
 <div class="header">
-    <h1>CHAMPIONS LEAGUE DZ</h1>
+    <h1>CHAMPIONS LEAGUE</h1>
     <div class="switch-container">
         <button class="switch-btn active" onclick="toggleView('groups', this)">المجموعات</button>
         <button class="switch-btn" onclick="toggleView('knockout', this)">الإقصائيات</button>
@@ -117,7 +140,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-    // 1. Firebase Config
     firebase.initializeApp({
         apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0",
         authDomain: "cluuuub-90ab9.firebaseapp.com",
@@ -125,7 +147,6 @@
     });
     const db = firebase.firestore();
 
-    // 2. UI Functions
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('active');
         document.getElementById('overlay').classList.toggle('active');
@@ -138,14 +159,13 @@
         btn.classList.add('active');
     }
 
-    // 3. نظام تسجيل الدخول والترابط
     async function checkAuth() {
         const loggedPlayer = localStorage.getItem("activePlayer");
         if (loggedPlayer) {
             document.getElementById("authAction").style.display = "none";
-            document.getElementById("userInfo").style.display = "flex";
+            const userInfoDiv = document.getElementById("userInfo");
+            userInfoDiv.style.display = "flex";
             
-            // جلب بيانات اللاعب من مجموعة teams
             const snap = await db.collection("teams").where("playerTeamName", "==", loggedPlayer).get();
             if (!snap.empty) {
                 const data = snap.docs[0].data();
@@ -160,7 +180,6 @@
         window.location.reload();
     }
 
-    // 4. تحميل المجموعات (مع إحصائيات الأهداف والفارق)
     function loadGroups() {
         db.collection("ucl_groups").onSnapshot(snap => {
             const container = document.getElementById("groupsContainer");
@@ -175,12 +194,11 @@
             });
 
             Object.keys(groupsMap).sort().forEach(gName => {
-                // ترتيب المجموعات (النقاط ثم فارق الأهداف)
                 const teams = groupsMap[gName].sort((a,b) => (b.points - a.points) || (b.gd - a.gd));
                 let rows = teams.map((t, i) => `
                     <tr>
                         <td>${i+1}</td>
-                        <td style="text-align:right"><img src="${t.logo}" class="team-logo-small"> ${t.name}</td>
+                        <td class="team-name-cell"><img src="${t.logo}" class="team-logo-small"> ${t.name}</td>
                         <td>${t.played}</td>
                         <td>${t.goalsFor}:${t.goalsAgainst}</td>
                         <td>${t.gd > 0 ? '+'+t.gd : t.gd}</td>
@@ -192,7 +210,7 @@
                     <div class="group-card">
                         <div class="group-name">المجموعة ${gName}</div>
                         <table>
-                            <thead><tr><th>#</th><th style="text-align:right">الفريق</th><th>ل</th><th>أهداف</th><th>ف</th><th>ن</th></tr></thead>
+                            <thead><tr><th>#</th><th style="text-align:right">الفريق</th><th>ل</th><th>+/-</th><th>ف</th><th>ن</th></tr></thead>
                             <tbody>${rows}</tbody>
                         </table>
                     </div>
@@ -201,7 +219,6 @@
         });
     }
 
-    // 5. تحميل الإقصائيات (دور 32، 16، إلخ)
     function loadKnockout() {
         db.collection("ucl_knockout").orderBy("time", "desc").onSnapshot(snap => {
             const container = document.getElementById("knockoutContainer");
@@ -221,10 +238,10 @@
                     grouped[st].forEach(m => {
                         container.innerHTML += `
                             <div class="match-card">
-                                <div class="team-box"><img src="${m.t1Logo}" style="width:25px;"> <span>${m.t1Name}</span></div>
+                                <div class="team-box"><img src="${m.t1Logo}" style="width:20px;"> <span>${m.t1Name}</span></div>
                                 <div class="score-box">${m.score1} - ${m.score2}</div>
                                 <div class="team-box" style="justify-content:flex-end; flex-direction:row-reverse;">
-                                    <img src="${m.t2Logo}" style="width:25px;"> <span>${m.t2Name}</span>
+                                    <img src="${m.t2Logo}" style="width:20px;"> <span>${m.t2Name}</span>
                                 </div>
                             </div>
                         `;
@@ -234,7 +251,6 @@
         });
     }
 
-    // التشغيل الموحد
     checkAuth();
     loadGroups();
     loadKnockout();
