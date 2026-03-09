@@ -2,31 +2,133 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>صحيفة البطولة | أخبار حصرية</title>
     <style>
-        body { background: #004e92; background: linear-gradient(to bottom, #000428, #004e92); margin: 0; padding: 20px; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
-        .news-feed { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 20px; }
-        
-        /* تصميم كرت OSM المطور */
-        .osm-card { background: white; border-radius: 15px; padding: 25px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.4); border-top: 5px solid #e53e3e; }
-        .card-header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 15px; }
-        .user-info { text-align: right; margin-right: 15px; }
-        .user-info h4 { margin: 0; color: #1a202c; font-size: 1.1rem; font-weight: bold; }
-        .user-info span { color: #718096; font-size: 0.85rem; }
-        .club-logo-circle { width: 65px; height: 65px; border-radius: 50%; border: 2px solid #e53e3e; background: white; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .club-logo-circle img { width: 85%; object-fit: contain; }
+        /* تحسين الخلفية العامة */
+        body { 
+            background: #000428; 
+            background: linear-gradient(to bottom, #000428, #004e92); 
+            margin: 0; 
+            padding: 15px 10px; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh;
+        }
 
-        .main-title { font-size: 1.5rem; font-weight: 900; color: #e53e3e; text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #eee; padding-bottom: 15px; text-transform: uppercase; }
-        .news-text { font-size: 1.1rem; line-height: 1.8; color: #2d3748; text-align: justify; }
-        .quote-style { background: #fff5f5; border-right: 4px solid #e53e3e; padding: 15px; margin-top: 15px; font-style: italic; color: #4a5568; display: block; }
+        /* تكبير عرض الحاوية للهاتف */
+        .news-feed { 
+            width: 100%; 
+            max-width: 850px; /* تم تكبير العرض الأقصى قليلاً */
+            display: flex; 
+            flex-direction: column; 
+            gap: 25px; 
+        }
         
-        .footer-tag { font-size: 0.8rem; color: #a0aec0; margin-top: 15px; border-top: 1px solid #edf2f7; padding-top: 10px; text-align: left; }
+        /* تصميم كرت OSM المطور - تكبير الحواف والظلال */
+        .osm-card { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 25px; 
+            position: relative; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+            border-top: 8px solid #e53e3e; /* زيادة سماكة الشريط العلوي */
+            transition: transform 0.3s ease;
+        }
+
+        /* الهيدر: تكبير العناصر لتسهيل الرؤية */
+        .card-header { 
+            display: flex; 
+            align-items: center; 
+            justify-content: flex-end; 
+            margin-bottom: 20px; 
+        }
+
+        .user-info { text-align: right; margin-right: 15px; }
+        .user-info h4 { 
+            margin: 0; 
+            color: #1a202c; 
+            font-size: 1.3rem; /* تكبير اسم المدرب */
+            font-weight: 800; 
+        }
+        .user-info span { 
+            color: #718096; 
+            font-size: 0.95rem; 
+            font-weight: 600;
+        }
+
+        /* تكبير دائرة الشعار */
+        .club-logo-circle { 
+            width: 75px; 
+            height: 75px; 
+            border-radius: 50%; 
+            border: 3px solid #e53e3e; 
+            background: white; 
+            overflow: hidden; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+        }
+        .club-logo-circle img { width: 85%; height: 85%; object-fit: contain; }
+
+        /* العنوان الرئيسي: جعله أضخم وأوضح */
+        .main-title { 
+            font-size: 1.7rem; 
+            font-weight: 900; 
+            color: #e53e3e; 
+            text-align: center; 
+            margin-bottom: 25px; 
+            border-bottom: 3px dashed #eee; 
+            padding-bottom: 15px; 
+            line-height: 1.3;
+        }
+
+        /* نص الخبر: تكبير الخط لراحة العين */
+        .news-text { 
+            font-size: 1.25rem; 
+            line-height: 1.8; 
+            color: #2d3748; 
+            text-align: justify; 
+        }
+
+        /* المقولة: جعلها تبرز أكثر */
+        .quote-style { 
+            background: #fff5f5; 
+            border-right: 6px solid #e53e3e; 
+            padding: 20px; 
+            margin-top: 20px; 
+            font-style: italic; 
+            color: #2d3748; 
+            display: block; 
+            border-radius: 5px 15px 15px 5px;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        /* تذييل الكرت */
+        .footer-tag { 
+            font-size: 0.9rem; 
+            color: #a0aec0; 
+            margin-top: 20px; 
+            border-top: 2px solid #edf2f7; 
+            padding-top: 15px; 
+            text-align: left; 
+            font-weight: bold;
+        }
+
+        /* تأثير بسيط عند اللمس للهاتف */
+        .osm-card:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
 
     <div class="news-feed" id="feed">
-        <p style="color:white; text-align:center;">جاري رصد آخر الفضائح والقصف الإعلامي...</p>
+        <p style="color:white; text-align:center; font-size: 1.2rem; margin-top: 50px;">جاري رصد آخر الفضائح والقصف الإعلامي...</p>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -35,7 +137,6 @@
         firebase.initializeApp({ apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0", projectId: "cluuuub-90ab9" });
         const db = firebase.firestore();
 
-        // عناوين متنوعة مستفزة (10 خيارات)
         const catchyTitles = [
             "🔥 قذيفة مدوية تستهدف [TargetCoach]",
             "🚨 إهانة علنية للمدرب [TargetCoach]",
@@ -49,7 +150,6 @@
             "🔨 [SenderCoach] يحطم هيبة [TargetCoach]"
         ];
 
-        // 30 مقدمة إخبارية متنوعة
         const newsIntros = [
             "فجّر المدرب <strong>[SenderCoach]</strong> قنبلة مدوية حين صرّح بلهجة حادة مستهدفاً نادي <strong>[TargetClub]</strong> ومدربه:",
             "في تصريح وصف بالأكثر رخصاً، لم يتردد <strong>[SenderCoach]</strong> في إهانة المدرب <strong>[TargetCoach]</strong> قائلاً:",
@@ -83,7 +183,6 @@
             "كلمات قوية ومستفزة من <strong>[SenderCoach]</strong>، والهدف هو تحطيم كبرياء <strong>[TargetClub]</strong>:"
         ];
 
-        // المقولات (Quotes)
         const extremeQuotes = [
             "المدرب [SenderCoach]: 'نادي [TargetClub] ليس فريقاً، هم مجرد حقل تجارب لخططي الجديدة، الفوز عليهم أسهل من شرب الماء'.",
             "صرح [SenderCoach]: 'رأيت الخوف في عيون [TargetCoach]، إنه يرتجف كالطفل، سأنهي مسيرة [TargetCoach] البائسة اليوم'.",
@@ -119,13 +218,11 @@
                     const sender = sDoc.data();
                     const target = tDoc.data();
 
-                    // 1. اختيار عنوان عشوائي
                     let randTitleTemplate = catchyTitles[Math.floor(Math.random() * catchyTitles.length)];
                     let finalTitle = randTitleTemplate
                         .replace("[TargetCoach]", target.playerTeamName)
                         .replace("[SenderCoach]", sender.playerTeamName);
 
-                    // 2. اختيار مقدمة عشوائية
                     let randIntroTemplate = newsIntros[Math.floor(Math.random() * newsIntros.length)];
                     let finalIntro = randIntroTemplate
                         .replace(/\[SenderCoach\]/g, sender.playerTeamName)
@@ -133,7 +230,6 @@
                         .replace(/\[SenderClub\]/g, sender.clubName)
                         .replace(/\[TargetCoach\]/g, target.playerTeamName);
 
-                    // 3. معالجة التصريح (Quote)
                     let quote = extremeQuotes[data.quoteIndex]
                         .replace(/\[SenderCoach\]/g, sender.playerTeamName)
                         .replace(/\[TargetClub\]/g, target.clubName)
@@ -153,8 +249,7 @@
                             <div class="main-title">${finalTitle}</div>
                             <div class="news-text">
                                 ${finalIntro}
-                                <br>
-                                <span class="quote-style">"${quote}"</span>
+                                <div class="quote-style">"${quote}"</div>
                             </div>
                             <div class="footer-tag">نُشر بواسطة: الصحافة الرياضية • ${data.timestamp ? new Date(data.timestamp.seconds*1000).toLocaleTimeString('ar-DZ') : 'الآن'}</div>
                         </div>
