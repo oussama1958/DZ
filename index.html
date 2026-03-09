@@ -6,181 +6,160 @@
     <title>ترتيب البطولات | Live Standings</title>
     
     <style>
-        /* --- المتغيرات الأساسية --- */
+        /* --- المتغيرات والتأسيس --- */
         :root {
             --primary: #0ea5e9;
-            --primary-hover: #0284c7;
+            --primary-dark: #0284c7;
             --bg: #0f172a;
             --card-bg: #1e293b;
+            --sidebar-bg: #16213e;
             --text: #f8fafc;
             --text-muted: #94a3b8;
             --border: #334155;
-            --gold: #fbbf24;
-            --nav-bg: #16213e;
-            --nav-hover: #1e293b;
-            --accent-color: #c39738;
+            --accent: #c39738;
             --success: #10b981;
             --danger: #ef4444;
+            --gold: #fbbf24;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
         }
+
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
-            min-height: 100vh;
-            line-height: 1.6;
+            line-height: 1.5;
+            overflow-x: hidden;
         }
 
-        /* --- شريط التنقل (Navigation) --- */
-        .main-nav {
-            background-color: var(--nav-bg);
-            padding: 5px 0;
-            border-bottom: 3px solid var(--accent-color);
-            position: sticky;
-            top: 0;
-            z-index: 9999;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 20px;
-        }
-
-        .user-profile-nav {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .user-info-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--accent-color);
-            font-weight: 800;
-            background: rgba(195, 151, 56, 0.1);
-            padding: 5px 12px;
+        /* --- زر القائمة (Menu Toggle) --- */
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
             border-radius: 12px;
-            border: 1px solid rgba(195, 151, 56, 0.2);
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .menu-toggle:hover { transform: scale(1.1); background: var(--primary-dark); }
+
+        /* --- القائمة الجانبية (Sidebar) --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background: var(--sidebar-bg);
+            z-index: 9999;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            border-left: 4px solid var(--accent);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.active { right: 0; }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 9998;
+            display: none;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .overlay.active { display: block; opacity: 1; }
+
+        /* --- بروفايل المستخدم في القائمة --- */
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
         }
 
         .user-nav-img {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            border: 2px solid var(--accent-color);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            margin-bottom: 12px;
             background: white;
-            object-fit: contain;
+            padding: 3px;
         }
 
-        .login-btn {
-            background: var(--primary);
-            color: white;
-            text-decoration: none;
-            padding: 8px 18px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: bold;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
-        }
-
-        .login-btn:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-        }
-
-        .nav-links {
-            list-style: none;
-            display: flex;
-            gap: 8px;
-            margin: 0;
-            padding: 0;
-        }
+        .nav-links { list-style: none; padding: 0; margin: 0; }
 
         .nav-item {
             color: var(--text);
             text-decoration: none;
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: 0.2s;
-            font-size: 0.9rem;
+            padding: 12px 18px;
             display: block;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            transition: 0.3s;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid transparent;
         }
 
         .nav-item:hover {
-            background: var(--nav-hover);
+            background: rgba(14, 165, 233, 0.15);
+            border-color: var(--primary);
             color: var(--primary);
+            transform: translateX(-5px);
         }
 
-        /* --- القوائم المنسدلة (Dropdowns) --- */
-        .dropdown { position: relative; }
-        
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background: var(--nav-bg);
-            min-width: 180px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            border: 1px solid var(--border);
-            overflow: hidden;
-            margin-top: 5px;
-            z-index: 1000;
-        }
-
-        .dropdown-content a {
-            padding: 12px 16px;
-            color: var(--text);
-            text-decoration: none;
+        .dropdown-title {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 20px 10px 10px;
             display: block;
-            font-size: 0.85rem;
-            transition: 0.2s;
-            text-align: right;
-            border-bottom: 1px solid var(--border);
         }
 
-        .dropdown-content a:hover {
-            background: var(--primary);
-            color: white;
-        }
-
-        .dropdown:hover .dropdown-content { display: block; }
-
-        /* --- رأس الصفحة (Header) --- */
+        /* --- رأس الصفحة --- */
         .header {
-            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
-            padding: 40px 20px;
+            padding: 80px 20px 40px;
             text-align: center;
-            border-bottom: 1px solid var(--border);
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
         }
 
         .header h1 {
-            margin: 0 0 25px 0;
-            font-size: 2.2rem;
-            letter-spacing: -1px;
-            background: linear-gradient(90deg, #38bdf8, #818cf8);
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            margin: 0 0 30px;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
+        /* --- أزرار التبديل --- */
         .switch-container {
             display: inline-flex;
             background: #020617;
-            padding: 6px;
-            border-radius: 16px;
+            padding: 5px;
+            border-radius: 18px;
             border: 1px solid var(--border);
             gap: 5px;
         }
@@ -188,9 +167,9 @@
         .switch-btn {
             background: transparent;
             border: none;
-            padding: 12px 30px;
+            padding: 12px 25px;
             color: var(--text-muted);
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
             font-weight: 700;
             transition: 0.3s;
@@ -199,52 +178,47 @@
         .switch-btn.active {
             background: var(--primary);
             color: white;
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
         }
 
-        /* --- الجداول (Tables) --- */
+        /* --- الجداول والحاويات --- */
         .container {
-            max-width: 1000px;
-            margin: 30px auto;
-            padding: 0 20px 60px;
-        }
-
-        .league-section { display: none; animation: slideUp 0.4s ease-out; }
-        .league-section.active { display: block; }
-
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(20px); } 
-            to { opacity: 1; transform: translateY(0); } 
+            max-width: 1100px;
+            margin: 0 auto 100px;
+            padding: 0 20px;
         }
 
         .table-wrapper {
             background: var(--card-bg);
             border-radius: 24px;
-            overflow: hidden;
+            overflow-x: auto;
             border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: var(--shadow);
         }
 
-        table { width: 100%; border-collapse: collapse; }
-        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* لضمان عدم تداخل البيانات في الشاشات الصغيرة جداً */
+        }
+
         th {
-            background: #243046;
+            background: rgba(15, 23, 42, 0.4);
             color: var(--text-muted);
-            padding: 18px 10px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 2px solid var(--border);
+            padding: 20px 15px;
+            font-size: 0.85rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
         }
 
         td {
-            padding: 16px 12px;
+            padding: 18px 15px;
             border-bottom: 1px solid var(--border);
-            font-size: 0.95rem;
-            vertical-align: middle;
             text-align: center;
+            font-size: 0.95rem;
         }
 
+        tr:last-child td { border-bottom: none; }
         tr:hover td { background: rgba(255,255,255,0.02); }
 
         .team-cell {
@@ -252,73 +226,383 @@
             align-items: center;
             gap: 15px;
             text-align: right;
-            padding-right: 10px;
+            font-weight: 600;
         }
 
         .team-logo {
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            background: white;
+            width: 35px;
+            height: 35px;
             object-fit: contain;
-            padding: 2px;
+            background: white;
+            border-radius: 8px;
+            padding: 3px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         .rank-circle {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 50%;
+            border-radius: 10px;
             background: #334155;
             font-weight: 800;
-            font-size: 0.8rem;
-            color: var(--text);
+            color: white;
         }
-        
+
+        /* تمييز المراكز الأولى */
         tr:nth-child(1) .rank-circle { background: var(--gold); color: #78350f; }
         tr:nth-child(2) .rank-circle { background: #cbd5e1; color: #334155; }
-        tr:nth-child(3) .rank-circle { background: #d97706; color: white; }
+        tr:nth-child(3) .rank-circle { background: #d97706; }
 
-        .points-col {
-            font-weight: 900;
+        .points-cell {
+            font-weight: 800;
             color: var(--primary);
             font-size: 1.1rem;
         }
 
-        /* --- الجوال --- */
+        .league-section { display: none; }
+        .league-section.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- تعديلات الهاتف --- */
         @media (max-width: 768px) {
-            .nav-container { flex-direction: column; gap: 15px; }
-            .header h1 { font-size: 1.6rem; }
-            .switch-btn { padding: 10px 20px; font-size: 0.85rem; }
-            th:nth-child(4), td:nth-child(4), 
-            th:nth-child(5), td:nth-child(5) { display: none; }
-            .team-cell span { font-size: 0.85rem; }
+            .header { padding: 70px 15px 30px; }
+            .container { padding: 0 10px; }
+            td, th { padding: 15px 10px; }
+            /* إخفاء الأعمدة الأقل أهمية على الهاتف الصغير */
+            .hide-mobile { display: none; }
         }
     </style>
 </head>
 <body>
 
-<nav class="main-nav">
-    <div class="nav-container">
-        <div class="user-profile-nav" id="userProfileNav">
-            <div id="userInfo" class="user-info-box" style="display: none;">
-                <span id="navUserName"></span>
-                <img id="navUserImg" src="" class="user-nav-img">
-            </div>
-            <div id="authAction"></div>
-        </div>
+<button class="menu-toggle" onclick="toggleSidebar()" aria-label="Open Menu">☰</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-        <ul class="nav-links">
-            <li><a class='nav-item' href='/'>🏠 الرئيسية</a></li>
-            <li><a class='nav-item' href='/cup'>🏆 الكأس</a></li>
-            <li><a class='nav-item' href='/ucl'>⚽ دوري الأبطال</a></li>
-        
-            </li>
-        </ul>
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header" id="userProfileNav">
+        <div id="userInfo" class="user-info-box" style="display: none;">
+            <img id="navUserImg" src="" class="user-nav-img">
+            <span id="navUserName" style="font-weight: 800; color: var(--accent); font-size: 1.1rem;"></span>
+            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.85rem; text-decoration:none; margin-top: 5px; display: block; font-weight: bold;">تسجيل الخروج ←</a>
+        </div>
+        <div id="authAction"></div>
     </div>
+
+    <ul class="nav-links">
+        <li><a class='nav-item' href='/'>🏠 الرئيسية</a></li>
+        <li><a class='nav-item' href='/cup'>🏆 الكأس</a></li>
+        <li><a class='nav-item' href='/ucl'>⚽ دوري الأبطال</a></li>
+        <!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ترتيب البطولات | Live Standings</title>
+    
+    <style>
+        /* --- المتغيرات والتأسيس --- */
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --sidebar-bg: #16213e;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --accent: #c39738;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gold: #fbbf24;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* --- زر القائمة (Menu Toggle) --- */
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .menu-toggle:hover { transform: scale(1.1); background: var(--primary-dark); }
+
+        /* --- القائمة الجانبية (Sidebar) --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background: var(--sidebar-bg);
+            z-index: 9999;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            border-left: 4px solid var(--accent);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.active { right: 0; }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 9998;
+            display: none;
+            opacity: 0;
+            transition: 0.3s;
+        }
+
+        .overlay.active { display: block; opacity: 1; }
+
+        /* --- بروفايل المستخدم في القائمة --- */
+        .sidebar-header {
+            text-align: center;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .user-nav-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            margin-bottom: 12px;
+            background: white;
+            padding: 3px;
+        }
+
+        .nav-links { list-style: none; padding: 0; margin: 0; }
+
+        .nav-item {
+            color: var(--text);
+            text-decoration: none;
+            padding: 12px 18px;
+            display: block;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            transition: 0.3s;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(14, 165, 233, 0.15);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateX(-5px);
+        }
+
+        .dropdown-title {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 20px 10px 10px;
+            display: block;
+        }
+
+        /* --- رأس الصفحة --- */
+        .header {
+            padding: 80px 20px 40px;
+            text-align: center;
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
+        }
+
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            margin: 0 0 30px;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- أزرار التبديل --- */
+        .switch-container {
+            display: inline-flex;
+            background: #020617;
+            padding: 5px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            gap: 5px;
+        }
+
+        .switch-btn {
+            background: transparent;
+            border: none;
+            padding: 12px 25px;
+            color: var(--text-muted);
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        .switch-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+        }
+
+        /* --- الجداول والحاويات --- */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto 100px;
+            padding: 0 20px;
+        }
+
+        .table-wrapper {
+            background: var(--card-bg);
+            border-radius: 24px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* لضمان عدم تداخل البيانات في الشاشات الصغيرة جداً */
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.4);
+            color: var(--text-muted);
+            padding: 20px 15px;
+            font-size: 0.85rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 18px 15px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .team-cell {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .team-logo {
+            width: 35px;
+            height: 35px;
+            object-fit: contain;
+            background: white;
+            border-radius: 8px;
+            padding: 3px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .rank-circle {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #334155;
+            font-weight: 800;
+            color: white;
+        }
+
+        /* تمييز المراكز الأولى */
+        tr:nth-child(1) .rank-circle { background: var(--gold); color: #78350f; }
+        tr:nth-child(2) .rank-circle { background: #cbd5e1; color: #334155; }
+        tr:nth-child(3) .rank-circle { background: #d97706; }
+
+        .points-cell {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .league-section { display: none; }
+        .league-section.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- تعديلات الهاتف --- */
+        @media (max-width: 768px) {
+            .header { padding: 70px 15px 30px; }
+            .container { padding: 0 10px; }
+            td, th { padding: 15px 10px; }
+            /* إخفاء الأعمدة الأقل أهمية على الهاتف الصغير */
+            .hide-mobile { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="menu-toggle" onclick="toggleSidebar()" aria-label="Open Menu">☰</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header" id="userProfileNav">
+        <div id="userInfo" class="user-info-box" style="display: none;">
+            <img id="navUserImg" src="" class="user-nav-img">
+            <span id="navUserName" style="font-weight: 800; color: var(--accent); font-size: 1.1rem;"></span>
+            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.85rem; text-decoration:none; margin-top: 5px; display: block; font-weight: bold;">تسجيل الخروج ←</a>
+        </div>
+        <div id="authAction"></div>
+    </div>
+
+    <ul class="nav-links">
+        <li><a class='nav-item' href='/'>🏠 الرئيسية</a></li>
+        <li><a class='nav-item' href='/cup'>🏆 الكأس</a></li>
+        <li><a class='nav-item' href='/ucl'>⚽ دوري الأبطال</a></li>
+        
+        <span class="dropdown-title">📅 جداول المباريات</span>
+        <li><a class='nav-item' href='/matches_1'>SC League</a></li>
+        <li><a class='nav-item' href='/matches_2'>KC League</a></li>
+
+        <span class="dropdown-title">📜 سجل النتائج</span>
+        <li><a class='nav-item' href='/matches_pr_1'>سجل SC</a></li>
+        <li><a class='nav-item' href='/matches_pr_2'>سجل KC</a></li>
+    </ul>
 </nav>
 
 <div class="header">
@@ -334,7 +618,15 @@
         <div class="table-wrapper">
             <table>
                 <thead>
-                    <tr><th>#</th><th style="text-align: right;">الفريق</th><th>لعب</th><th>له</th><th>عليه</th><th>+/-</th><th>نقاط</th></tr>
+                    <tr>
+                        <th>#</th>
+                        <th style="text-align: right;">الفريق</th>
+                        <th>لعب</th>
+                        <th class="hide-mobile">له</th>
+                        <th class="hide-mobile">عليه</th>
+                        <th>+/-</th>
+                        <th>نقاط</th>
+                    </tr>
                 </thead>
                 <tbody id="table1"></tbody>
             </table>
@@ -345,7 +637,15 @@
         <div class="table-wrapper">
             <table>
                 <thead>
-                    <tr><th>#</th><th style="text-align: right;">الفريق</th><th>لعب</th><th>له</th><th>عليه</th><th>+/-</th><th>نقاط</th></tr>
+                    <tr>
+                        <th>#</th>
+                        <th style="text-align: right;">الفريق</th>
+                        <th>لعب</th>
+                        <th class="hide-mobile">له</th>
+                        <th class="hide-mobile">عليه</th>
+                        <th>+/-</th>
+                        <th>نقاط</th>
+                    </tr>
                 </thead>
                 <tbody id="table2"></tbody>
             </table>
@@ -364,6 +664,11 @@
     });
     const db = firebase.firestore();
 
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
+    }
+
     async function fetchLoggedUser() {
         const loggedPlayerName = localStorage.getItem("activePlayer");
         const authActionDiv = document.getElementById("authAction");
@@ -371,21 +676,17 @@
 
         if (!loggedPlayerName) {
             userInfoDiv.style.display = "none";
-            authActionDiv.innerHTML = `<a href="login.html" class="login-btn">🔐 تسجيل الدخول</a>`;
+            authActionDiv.innerHTML = `<a href="login.html" class="nav-item" style="background:var(--primary); color:white; text-align:center; margin-top:20px;">🔐 تسجيل الدخول</a>`;
             return;
         }
 
         try {
-            const snapshot = await db.collection("teams")
-                                     .where("playerTeamName", "==", loggedPlayerName)
-                                     .get();
-            
+            const snapshot = await db.collection("teams").where("playerTeamName", "==", loggedPlayerName).get();
             if (!snapshot.empty) {
                 const data = snapshot.docs[0].data();
                 userInfoDiv.style.display = "flex";
                 document.getElementById("navUserName").innerText = data.playerTeamName;
-                document.getElementById("navUserImg").src = data.clubLogo || 'https://via.placeholder.com/35';
-                authActionDiv.innerHTML = `<a href="#" onclick="logout()" style="color:var(--danger); font-size:0.75rem; text-decoration:none; font-weight:bold; margin-right:10px;">خروج</a>`;
+                document.getElementById("navUserImg").src = data.clubLogo || 'https://via.placeholder.com/80';
             }
         } catch (e) { console.error(e); }
     }
@@ -399,14 +700,7 @@
         db.collection(col).onSnapshot(snapshot => {
             let teams = [];
             snapshot.forEach(doc => teams.push({ id: doc.id, ...doc.data() }));
-
-            teams.sort((a, b) => {
-                if ((b.points || 0) !== (a.points || 0)) return (b.points || 0) - (a.points || 0);
-                let diffA = (a.goalsFor || 0) - (a.goalsAgainst || 0);
-                let diffB = (b.goalsFor || 0) - (b.goalsAgainst || 0);
-                if (diffB !== diffA) return diffB - diffA;
-                return (b.goalsFor || 0) - (a.goalsFor || 0);
-            });
+            teams.sort((a, b) => (b.points || 0) - (a.points || 0));
 
             const tbody = document.getElementById(targetId);
             tbody.innerHTML = "";
@@ -415,12 +709,12 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><span class="rank-circle">${i + 1}</span></td>
-                        <td><div class="team-cell"><img src="${t.logo}" class="team-logo" onerror="this.src='https://via.placeholder.com/34'"><span>${t.name}</span></div></td>
+                        <td><div class="team-cell"><img src="${t.logo}" class="team-logo"><span>${t.name}</span></div></td>
                         <td>${t.played || 0}</td>
-                        <td>${t.goalsFor || 0}</td>
-                        <td>${t.goalsAgainst || 0}</td>
+                        <td class="hide-mobile">${t.goalsFor || 0}</td>
+                        <td class="hide-mobile">${t.goalsAgainst || 0}</td>
                         <td style="color:${diff>0?'var(--success)':(diff<0?'var(--danger)':'')}">${diff > 0 ? '+' + diff : diff}</td>
-                        <td class="points-col">${t.points || 0}</td>
+                        <td class="points-cell">${t.points || 0}</td>
                     </tr>`;
             });
         });
@@ -437,6 +731,138 @@
     loadLeagueData("league1", "table1");
     loadLeagueData("league2", "table2");
 </script>
-</body>
 
+</body>
+</html>
+    </ul>
+</nav>
+
+<div class="header">
+    <h1>DZ دوري</h1>
+    <div class="switch-container">
+        <button class="switch-btn active" id="btn1" onclick="toggleLeague(1)">SC League</button>
+        <button class="switch-btn" id="btn2" onclick="toggleLeague(2)">KC League</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="league-section active" id="view1">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th style="text-align: right;">الفريق</th>
+                        <th>لعب</th>
+                        <th class="hide-mobile">له</th>
+                        <th class="hide-mobile">عليه</th>
+                        <th>+/-</th>
+                        <th>نقاط</th>
+                    </tr>
+                </thead>
+                <tbody id="table1"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="league-section" id="view2">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th style="text-align: right;">الفريق</th>
+                        <th>لعب</th>
+                        <th class="hide-mobile">له</th>
+                        <th class="hide-mobile">عليه</th>
+                        <th>+/-</th>
+                        <th>نقاط</th>
+                    </tr>
+                </thead>
+                <tbody id="table2"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0",
+        authDomain: "cluuuub-90ab9.firebaseapp.com",
+        projectId: "cluuuub-90ab9"
+    });
+    const db = firebase.firestore();
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
+    }
+
+    async function fetchLoggedUser() {
+        const loggedPlayerName = localStorage.getItem("activePlayer");
+        const authActionDiv = document.getElementById("authAction");
+        const userInfoDiv = document.getElementById("userInfo");
+
+        if (!loggedPlayerName) {
+            userInfoDiv.style.display = "none";
+            authActionDiv.innerHTML = `<a href="login.html" class="nav-item" style="background:var(--primary); color:white; text-align:center; margin-top:20px;">🔐 تسجيل الدخول</a>`;
+            return;
+        }
+
+        try {
+            const snapshot = await db.collection("teams").where("playerTeamName", "==", loggedPlayerName).get();
+            if (!snapshot.empty) {
+                const data = snapshot.docs[0].data();
+                userInfoDiv.style.display = "flex";
+                document.getElementById("navUserName").innerText = data.playerTeamName;
+                document.getElementById("navUserImg").src = data.clubLogo || 'https://via.placeholder.com/80';
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    function logout() {
+        localStorage.removeItem("activePlayer");
+        location.reload();
+    }
+
+    function loadLeagueData(col, targetId) {
+        db.collection(col).onSnapshot(snapshot => {
+            let teams = [];
+            snapshot.forEach(doc => teams.push({ id: doc.id, ...doc.data() }));
+            teams.sort((a, b) => (b.points || 0) - (a.points || 0));
+
+            const tbody = document.getElementById(targetId);
+            tbody.innerHTML = "";
+            teams.forEach((t, i) => {
+                const diff = (t.goalsFor || 0) - (t.goalsAgainst || 0);
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="rank-circle">${i + 1}</span></td>
+                        <td><div class="team-cell"><img src="${t.logo}" class="team-logo"><span>${t.name}</span></div></td>
+                        <td>${t.played || 0}</td>
+                        <td class="hide-mobile">${t.goalsFor || 0}</td>
+                        <td class="hide-mobile">${t.goalsAgainst || 0}</td>
+                        <td style="color:${diff>0?'var(--success)':(diff<0?'var(--danger)':'')}">${diff > 0 ? '+' + diff : diff}</td>
+                        <td class="points-cell">${t.points || 0}</td>
+                    </tr>`;
+            });
+        });
+    }
+
+    function toggleLeague(num) {
+        document.querySelectorAll('.league-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('view' + num).classList.add('active');
+        document.getElementById('btn' + num).classList.add('active');
+    }
+
+    fetchLoggedUser();
+    loadLeagueData("league1", "table1");
+    loadLeagueData("league2", "table2");
+</script>
+
+</body>
 </html>
