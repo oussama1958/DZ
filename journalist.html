@@ -3,260 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صحيفة البطولة | أخبار حصرية</title>
+    <title>صحيفة البطولة | الأخبار الحصرية</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        /* تحسين الخلفية العامة */
-        body { 
-            background: #000428; 
-            background: linear-gradient(to bottom, #000428, #004e92); 
-            margin: 0; 
-            padding: 15px 10px; 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            min-height: 100vh;
+        :root {
+            --primary: #0ea5e9;
+            --primary-dark: #0284c7;
+            --bg: #0f172a;
+            --sidebar-bg: #16213e;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(51, 65, 85, 0.5);
+            --accent: #fbbf24;
+            --danger: #ef4444;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
         }
 
-        /* تكبير عرض الحاوية للهاتف */
+        * { box-sizing: border-box; transition: all 0.25s ease; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg);
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                              radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Sidebar & Overlay --- */
+        .menu-toggle {
+            position: fixed; top: 15px; right: 15px; z-index: 1001;
+            background: var(--primary); color: white; border: none;
+            width: 45px; height: 45px; border-radius: 12px;
+            cursor: pointer; box-shadow: var(--shadow);
+            font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+        }
+
+        .sidebar {
+            position: fixed; top: 0; right: -280px;
+            width: 260px; height: 100%;
+            background: var(--sidebar-bg); z-index: 9999;
+            border-left: 3px solid var(--primary);
+            padding: 30px 15px; display: flex; flex-direction: column;
+        }
+        .sidebar.active { right: 0; }
+
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(3px); z-index: 9998; display: none;
+        }
+        .overlay.active { display: block; }
+
+        .sidebar-header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+        .user-nav-img { width: 75px; height: 75px; border-radius: 50%; border: 3px solid var(--primary); margin-bottom: 10px; background: #fff; object-fit: cover; }
+
+        .nav-item {
+            color: var(--text); text-decoration: none; padding: 12px 15px;
+            display: flex; align-items: center; gap: 12px;
+            border-radius: 10px; margin-bottom: 5px; font-weight: 500; font-size: 0.95rem;
+        }
+        .nav-item:hover, .nav-item.active-link { background: rgba(14, 165, 233, 0.15); color: var(--primary); }
+        .nav-item.active-link { background: var(--primary); color: white; }
+
+        /* --- News Feed Layout --- */
+        .header { padding: 80px 15px 30px; text-align: center; }
+        .header h1 {
+            font-size: 2.2rem; margin: 0; 
+            background: linear-gradient(to bottom, #fff, var(--primary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-weight: 900;
+        }
+
         .news-feed { 
-            width: 100%; 
-            max-width: 850px; /* تم تكبير العرض الأقصى قليلاً */
-            display: flex; 
-            flex-direction: column; 
-            gap: 25px; 
+            width: 100%; max-width: 750px; 
+            margin: 0 auto 60px; padding: 0 15px;
+            display: flex; flex-direction: column; gap: 30px; 
         }
         
-        /* تصميم كرت OSM المطور - تكبير الحواف والظلال */
+        /* --- OSM News Card Design --- */
         .osm-card { 
-            background: white; 
-            border-radius: 20px; 
-            padding: 25px; 
-            position: relative; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
-            border-top: 8px solid #e53e3e; /* زيادة سماكة الشريط العلوي */
-            transition: transform 0.3s ease;
+            background: white; border-radius: 25px; padding: 25px; 
+            position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+            animation: slideUp 0.5s ease-out;
         }
 
-        /* الهيدر: تكبير العناصر لتسهيل الرؤية */
-        .card-header { 
-            display: flex; 
-            align-items: center; 
-            justify-content: flex-end; 
-            margin-bottom: 20px; 
-        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
+        .card-header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 20px; }
         .user-info { text-align: right; margin-right: 15px; }
-        .user-info h4 { 
-            margin: 0; 
-            color: #1a202c; 
-            font-size: 1.3rem; /* تكبير اسم المدرب */
-            font-weight: 800; 
-        }
-        .user-info span { 
-            color: #718096; 
-            font-size: 0.95rem; 
-            font-weight: 600;
-        }
+        .user-info h4 { margin: 0; color: #0f172a; font-size: 1.3rem; font-weight: 800; }
+        .user-info span { color: #64748b; font-size: 0.9rem; font-weight: 600; }
 
-        /* تكبير دائرة الشعار */
         .club-logo-circle { 
-            width: 75px; 
-            height: 75px; 
-            border-radius: 50%; 
-            border: 3px solid #e53e3e; 
-            background: white; 
-            overflow: hidden; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); 
+            width: 75px; height: 75px; border-radius: 50%; 
+            background: white; overflow: hidden; display: flex; 
+            align-items: center; justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
         .club-logo-circle img { width: 85%; height: 85%; object-fit: contain; }
 
-        /* العنوان الرئيسي: جعله أضخم وأوضح */
         .main-title { 
-            font-size: 1.7rem; 
-            font-weight: 900; 
-            color: #e53e3e; 
-            text-align: center; 
-            margin-bottom: 25px; 
-            border-bottom: 3px dashed #eee; 
-            padding-bottom: 15px; 
-            line-height: 1.3;
+            font-size: 1.6rem; font-weight: 900; text-align: center; 
+            margin-bottom: 20px; border-bottom: 3px dashed #f1f5f9; padding-bottom: 15px; 
+            line-height: 1.4;
         }
 
-        /* نص الخبر: تكبير الخط لراحة العين */
-        .news-text { 
-            font-size: 1.25rem; 
-            line-height: 1.8; 
-            color: #2d3748; 
-            text-align: justify; 
-        }
+        .news-text { font-size: 1.2rem; line-height: 1.8; color: #334155; text-align: justify; }
 
-        /* المقولة: جعلها تبرز أكثر */
         .quote-style { 
-            background: #fff5f5; 
-            border-right: 6px solid #e53e3e; 
-            padding: 20px; 
-            margin-top: 20px; 
-            font-style: italic; 
-            color: #2d3748; 
-            display: block; 
-            border-radius: 5px 15px 15px 5px;
-            font-weight: 600;
-            font-size: 1.2rem;
+            padding: 20px; margin-top: 20px; font-style: italic; 
+            display: block; border-radius: 10px 25px 25px 10px;
+            font-weight: 800; font-size: 1.15rem; line-height: 1.6;
         }
         
-        /* تذييل الكرت */
         .footer-tag { 
-            font-size: 0.9rem; 
-            color: #a0aec0; 
-            margin-top: 20px; 
-            border-top: 2px solid #edf2f7; 
-            padding-top: 15px; 
-            text-align: left; 
+            font-size: 0.85rem; color: #94a3b8; margin-top: 25px; 
+            border-top: 2px solid #f1f5f9; padding-top: 15px; text-align: left; 
             font-weight: bold;
         }
 
-        /* تأثير بسيط عند اللمس للهاتف */
-        .osm-card:active {
-            transform: scale(0.98);
-        }
+        .no-news { color: var(--text-muted); text-align: center; margin-top: 50px; font-size: 1.1rem; }
     </style>
 </head>
 <body>
 
-    <div class="news-feed" id="feed">
-        <p style="color:white; text-align:center; font-size: 1.2rem; margin-top: 50px;">جاري رصد آخر الفضائح والقصف الإعلامي...</p>
+<button class="menu-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header" id="userProfileNav">
+        <div id="userInfo" style="display: none; flex-direction: column; align-items: center;">
+            <img id="navUserImg" src="" class="user-nav-img">
+            <span id="navUserName" style="font-weight: bold; color: var(--accent); font-size: 1rem;"></span>
+            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.8rem; text-decoration:none; margin-top:10px; font-weight:bold;">تسجيل الخروج ←</a>
+        </div>
+        
+        <div id="authAction" style="display: block; text-align: center;">
+            <i class="fas fa-user-circle" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 10px;"></i>
+            <a href="login.html" class="nav-item" style="justify-content: center; background: var(--primary); color: white;"> 🔐 دخول</a>
+        </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script>
-        firebase.initializeApp({ apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0", projectId: "cluuuub-90ab9" });
-        const db = firebase.firestore();
+    <div class="nav-links">
+        <a class='nav-item' href='index.html'><i class="fas fa-home"></i> الرئيسية</a>
+        <a class='nav-item' href='ucl.html'><i class="fas fa-star"></i> دوري الأبطال</a>
+        <a class='nav-item' href='chat.html'><i class="fas fa-comments"></i> الدردشة</a>
+        <a class='nav-item' href='cup.html'><i class="fas fa-trophy"></i> الكأس</a>
+        <a class='nav-item active-link' href='journalist.html'><i class="fas fa-bullhorn"></i> صحيفة البطولة</a>
+    </div>
+</nav>
 
-        const catchyTitles = [
-            "🔥 قذيفة مدوية تستهدف [TargetCoach]",
-            "🚨 إهانة علنية للمدرب [TargetCoach]",
-            "💀 قصف جبهة مباشر لـ [TargetCoach]",
-            "💥 زلزال يضرب كبرياء [TargetCoach]",
-            "🤡 مسخرة الموسم: [SenderCoach] ضد [TargetCoach]",
-            "🧨 تصريح يذل [TargetCoach] للأبد",
-            "🤬 حرب كلامية: [SenderCoach] يمسح الأرض بـ [TargetCoach]",
-            "📢 فضيحة إعلامية بطلها [TargetCoach]",
-            "👊 لا رحمة.. [SenderCoach] يهين [TargetCoach]",
-            "🔨 [SenderCoach] يحطم هيبة [TargetCoach]"
-        ];
+<div class="header">
+    <h1> الصحافة</h1>
+    <p style="color: var(--text-muted); margin-top: 10px;"> </p>
+</div>
 
-        const newsIntros = [
-            "فجّر المدرب <strong>[SenderCoach]</strong> قنبلة مدوية حين صرّح بلهجة حادة مستهدفاً نادي <strong>[TargetClub]</strong> ومدربه:",
-            "في تصريح وصف بالأكثر رخصاً، لم يتردد <strong>[SenderCoach]</strong> في إهانة المدرب <strong>[TargetCoach]</strong> قائلاً:",
-            "خرجة إعلامية غير متوقعة من مدرب <strong>[SenderClub]</strong>، حيث وجّه كلمات قاسية لنادي <strong>[TargetClub]</strong>:",
-            "قرر المدرب <strong>[SenderCoach]</strong> كسر حاجز الصمت، ليقصف جبهة <strong>[TargetCoach]</strong> بعبارات مهينة:",
-            "خلال ندوة صحفية عاصفة، سخر <strong>[SenderCoach]</strong> من قدرات نادي <strong>[TargetClub]</strong> وصرح:",
-            "لم يسلم المدرب <strong>[TargetCoach]</strong> من لسان الخصم، حيث وصفه <strong>[SenderCoach]</strong> بعبارات رخيصة:",
-            "في محاولة لاستفزاز الخصم، أطلق <strong>[SenderCoach]</strong> رصاصات كلامية تجاه <strong>[TargetClub]</strong>:",
-            "إهانة علنية وأمام الجميع! المدرب <strong>[SenderCoach]</strong> يمسح الأرض بكرامة المدرب <strong>[TargetCoach]</strong> قائلاً:",
-            "كواليس البطولة تشتعل! <strong>[SenderCoach]</strong> يصف نادي <strong>[TargetClub]</strong> بأوصاف لا تليق، إليكم ما قاله:",
-            "بلهجة استعلائية، قلّل المدرب <strong>[SenderCoach]</strong> من شأن <strong>[TargetCoach]</strong> وفريقه، مصرحاً:",
-            "تصريح للذكرى! <strong>[SenderCoach]</strong> يفتح النار على <strong>[TargetClub]</strong> ويؤكد بوقاحة:",
-            "وسط ذهول الصحفيين، أهان <strong>[SenderCoach]</strong> تاريخ نادي <strong>[TargetClub]</strong> بكلمات جارحة:",
-            "بدأ المدرب <strong>[SenderCoach]</strong> الحرب النفسية مبكراً، واصفاً المدرب <strong>[TargetCoach]</strong> بـ:",
-            "رخص إعلامي غير مسبوق! مدرب <strong>[SenderClub]</strong> يستهزئ بنادي <strong>[TargetClub]</strong> علانية:",
-            "تصريحات مستفزة جداً خرجت من معسكر <strong>[SenderClub]</strong>، حيث قال مدربهم <strong>[SenderCoach]</strong>:",
-            "المدرب <strong>[SenderCoach]</strong> يهاجم بشراسة ويحاول إذلال <strong>[TargetCoach]</strong> أمام الكاميرات:",
-            "في خرجة 'رخيصة'، سخر مدرب <strong>[SenderClub]</strong> من تكتيك الخصم <strong>[TargetClub]</strong> قائلاً:",
-            "لم يتأخر المدرب <strong>[SenderCoach]</strong> في الرد، لكن رده كان قصفاً مباشراً لكرامة <strong>[TargetCoach]</strong>:",
-            "زلزال في المؤتمر الصحفي! <strong>[SenderCoach]</strong> يصف مدرب <strong>[TargetClub]</strong> بأبشع النعوت:",
-            "بكل ثقة وغرور، صرح <strong>[SenderCoach]</strong> موجهاً كلامه لنادي <strong>[TargetClub]</strong>:",
-            "إهانة مباشرة في وجه المدرب <strong>[TargetCoach]</strong>، حيث قال عنه خصمه <strong>[SenderCoach]</strong>:",
-            "مدرب <strong>[SenderClub]</strong> يخرج عن النص ويهين <strong>[TargetClub]</strong> بطريقة مستفزة للغاية:",
-            "قذيفة كلامية أطلقها <strong>[SenderCoach]</strong>، والضحية هذه المرة هو المدرب <strong>[TargetCoach]</strong>:",
-            "في سياق النميمة الرياضية، تم تسريب تصريح لـ <strong>[SenderCoach]</strong> يذل فيه نادي <strong>[TargetClub]</strong>:",
-            "المدرب <strong>[SenderCoach]</strong> لا يحترم أحداً! إليكم ما قاله عن المدرب <strong>[TargetCoach]</strong> وفريقه:",
-            "تصريح يقطر سماً! مدرب <strong>[SenderClub]</strong> يهاجم <strong>[TargetClub]</strong> بكلمات مهينة:",
-            "حرب الجبهات بدأت! <strong>[SenderCoach]</strong> يسخر من 'رجولة' لاعبي <strong>[TargetClub]</strong> كروياً:",
-            "المدرب <strong>[SenderCoach]</strong> يفتح النار ولا يبالي، واصفاً <strong>[TargetClub]</strong> بالرخص قائلاً:",
-            "في محاولة لكسر هيبة الخصم، صرح <strong>[SenderCoach]</strong> بكلمات تقصف جبهة <strong>[TargetCoach]</strong>:",
-            "كلمات قوية ومستفزة من <strong>[SenderCoach]</strong>، والهدف هو تحطيم كبرياء <strong>[TargetClub]</strong>:"
-        ];
+<div class="news-feed" id="feed">
+    <div class="no-news">جاري استدعاء المراسلين...</div>
+</div>
 
-        const extremeQuotes = [
-            "المدرب [SenderCoach]: 'نادي [TargetClub] ليس فريقاً، هم مجرد حقل تجارب لخططي الجديدة، الفوز عليهم أسهل من شرب الماء'.",
-            "صرح [SenderCoach]: 'رأيت الخوف في عيون [TargetCoach]، إنه يرتجف كالطفل، سأنهي مسيرة [TargetCoach] البائسة اليوم'.",
-            "قصف من [SenderCoach]: 'نادي [TargetClub] عبارة عن حطام كروي، مكانهم في مزبلة التاريخ وليس في ملعبي'.",
-            "[SenderCoach] يستهزئ: 'المدرب [TargetCoach] لا يصلح حتى لجمع الكرات، تكتيكه يذكرني بعصر الهواة'.",
-            "تصريح مهين: 'نادي [TargetClub] فريق رخيص يبحث عن الشهرة بمواجهتنا، سأجعلهم عبرة للجميع'.",
-            "[SenderCoach]: 'لو لعبت بفريق الأواسط سأذل [TargetClub]، هم مجرد ظاهرة صوتية بلا رجولة كروية'.",
-            "قنبلة: 'المدرب [TargetCoach] يتوسل للحكام دائماً لأنه يعلم أن فريقه بلا شرف رياضي وعاجز فنياً'.",
-            "صرح [SenderCoach]: 'سأقوم بدعس كبرياء [TargetClub] المزيّف، سأجعل جمهورهم يغادر الملعب بالدموع'.",
-            "[SenderCoach] بوقاحة: 'مستوى [TargetClub] تحت الصفر، مواجهتهم هي مضيعة للوقت وحصة تدريبية مملة'.",
-            "رسالة قاسية: 'المدرب [TargetCoach] شخص بلا كرامة، يتقاضى راتباً ليُهان في كل جولة، يا له من مسكين'.",
-            "[SenderCoach]: 'سأقوم بإبادة أحلام [TargetClub]، سأريهم الفرق بين أسياد الميدان والخدم'.",
-            "تصريح مستفز: 'المدرب [TargetCoach] يملك وجهاً نحساً، نادي [TargetClub] سيهبط للهاوية بسببه'.",
-            "[SenderCoach]: 'لا أرى منافساً، أرى فقط حطاماً اسمه [TargetClub] ومدرباً فاشلاً اسمه [TargetCoach]'.",
-            "قصف جبهات: 'نادي [TargetClub] يشتري الحكام ونحن نشتري التاريخ، سأذلهم في عقر دارهم'.",
-            "[SenderCoach]: 'المدرب [TargetCoach] يهرب كالفأر من التصريحات، إنه يعلم أنني سأحطم رأسه كروياً'.",
-            "تصريح ناري: 'فريق [TargetClub] بلا روح، هم مجرد أجساد ميتة تتحرك فوق العشب، سأدفنهم اليوم'.",
-            "[SenderCoach]: 'سأعلم [TargetCoach] أصول اللعبة، يبدو أنه قضى مسيرته في مشاهدة الرسوم المتحركة'.",
-            "إهانة مباشرة: 'نادي [TargetClub] وصمة عار، لو كنت مكانهم لانسحبت قبل أن أتعرض للذل أمامي'.",
-            "[SenderCoach]: 'أريد من [TargetCoach] أن يجهز مناديل الورق، لأن البكاء سيكون طويلاً الليلة'.",
-            "ختام القصف: 'لا يوجد فريق في هذه البطولة أرخص من [TargetClub]، سأجعلهم يزحفون خلفنا'."
-        ];
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
-        db.collection("hot_news").orderBy("timestamp", "desc").onSnapshot(async snap => {
-            const feed = document.getElementById("feed");
-            feed.innerHTML = "";
-            for (const doc of snap.docs) {
-                const data = doc.data();
-                const sDoc = await db.collection("teams").doc(data.senderId).get();
-                const tDoc = await db.collection("teams").doc(data.targetId).get();
-                
-                if (sDoc.exists && tDoc.exists) {
-                    const sender = sDoc.data();
-                    const target = tDoc.data();
+<script>
+    // تهيئة Firebase
+    const firebaseConfig = { apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0", projectId: "cluuuub-90ab9" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
 
-                    let randTitleTemplate = catchyTitles[Math.floor(Math.random() * catchyTitles.length)];
-                    let finalTitle = randTitleTemplate
-                        .replace("[TargetCoach]", target.playerTeamName)
-                        .replace("[SenderCoach]", sender.playerTeamName);
+    // نظام الألوان العشوائي
+    const hotColors = [
+        { main: "#e53e3e", light: "#fff5f5" }, { main: "#3182ce", light: "#ebf8ff" },
+        { main: "#38a169", light: "#f0fff4" }, { main: "#805ad5", light: "#faf5ff" },
+        { main: "#d69e2e", light: "#fffff0" }, { main: "#dd6b20", light: "#fffaf0" }
+    ];
 
-                    let randIntroTemplate = newsIntros[Math.floor(Math.random() * newsIntros.length)];
-                    let finalIntro = randIntroTemplate
-                        .replace(/\[SenderCoach\]/g, sender.playerTeamName)
-                        .replace(/\[TargetClub\]/g, target.clubName)
-                        .replace(/\[SenderClub\]/g, sender.clubName)
-                        .replace(/\[TargetCoach\]/g, target.playerTeamName);
+    // مصفوفات النصوص
+    const catchyTitles = [ "🔥 قذيفة مدوية تستهدف [TargetCoach]", "🚨 إهانة علنية للمدرب [TargetCoach]", "💀 قصف جبهة مباشر لـ [TargetCoach]", "💥 زلزال يضرب كبرياء [TargetCoach]", "👊 لا رحمة.. [SenderCoach] يهين [TargetCoach]" ];
+    const extremeQuotes = [
+        "المدرب [SenderCoach]: 'نادي [TargetClub] ليس فريقاً، هم مجرد حقل تجارب لخططي الجديدة'.",
+        "صرح [SenderCoach]: 'رأيت الخوف في عيون [TargetCoach]، إنه يرتجف كالطفل'.",
+        "قصف من [SenderCoach]: 'نادي [TargetClub] عبارة عن حطام كروي، مكانهم في مزبلة التاريخ'.",
+        "[SenderCoach] يستهزئ: 'المدرب [TargetCoach] لا يصلح حتى لجمع الكرات، تكتيكه مضحك'.",
+        "تصريح مهين: 'نادي [TargetClub] فريق رخيص يبحث عن الشهرة بمواجهتنا'.",
+        "[SenderCoach]: 'لو لعبت بفريق الأواسط سأذل [TargetClub]، هم بلا رجولة كروية'.",
+        "قنبلة: 'المدرب [TargetCoach] يتوسل للحكام دائماً لأنه يعلم أن فريقه بلا شرف'.",
+        "صرح [SenderCoach]: 'سأقوم بدعس كبرياء [TargetClub] المزيّف، سأجعلهم يبكون'.",
+        "[SenderCoach] بوقاحة: 'مستوى [TargetClub] تحت الصفر، مواجهتهم مضيعة للوقت'.",
+        "رسالة قاسية: 'المدرب [TargetCoach] شخص بلا كرامة، يتقاضى راتباً ليُهان'."
+    ];
 
-                    let quote = extremeQuotes[data.quoteIndex]
-                        .replace(/\[SenderCoach\]/g, sender.playerTeamName)
-                        .replace(/\[TargetClub\]/g, target.clubName)
-                        .replace(/\[TargetCoach\]/g, target.playerTeamName);
-                    
-                    feed.innerHTML += `
-                        <div class="osm-card">
-                            <div class="card-header">
-                                <div class="user-info">
-                                    <h4>المدرب ${sender.playerTeamName}</h4>
-                                    <span>@${sender.clubName}_Official</span>
-                                </div>
-                                <div class="club-logo-circle">
-                                    <img src="${sender.clubLogo}">
-                                </div>
-                            </div>
-                            <div class="main-title">${finalTitle}</div>
-                            <div class="news-text">
-                                ${finalIntro}
-                                <div class="quote-style">"${quote}"</div>
-                            </div>
-                            <div class="footer-tag">نُشر بواسطة: الصحافة الرياضية • ${data.timestamp ? new Date(data.timestamp.seconds*1000).toLocaleTimeString('ar-DZ') : 'الآن'}</div>
-                        </div>
-                    `;
+    // التحكم في الـ Sidebar وحالة المستخدم
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
+    }
+
+    auth.onAuthStateChanged(user => {
+        const userInfo = document.getElementById('userInfo');
+        const authAction = document.getElementById('authAction');
+        if (user) {
+            db.collection("teams").doc(user.uid).get().then(doc => {
+                if (doc.exists) {
+                    const d = doc.data();
+                    document.getElementById('navUserImg').src = d.clubLogo;
+                    document.getElementById('navUserName').innerText = d.playerTeamName;
+                    userInfo.style.display = 'flex';
+                    authAction.style.display = 'none';
                 }
+            });
+        } else {
+            userInfo.style.display = 'none';
+            authAction.style.display = 'block';
+        }
+    });
+
+    function logout() {
+        auth.signOut().then(() => window.location.reload());
+    }
+
+    // جلب الأخبار وعرضها
+    db.collection("hot_news").orderBy("timestamp", "desc").onSnapshot(async snap => {
+        const feed = document.getElementById("feed");
+        if (snap.empty) { feed.innerHTML = '<div class="no-news">لا توجد قذائف حالياً.. الجميع يخشى المواجهة!</div>'; return; }
+        
+        feed.innerHTML = "";
+        for (const doc of snap.docs) {
+            const data = doc.data();
+            const sDoc = await db.collection("teams").doc(data.senderId).get();
+            const tDoc = await db.collection("teams").doc(data.targetId).get();
+            
+            if (sDoc.exists && tDoc.exists) {
+                const s = sDoc.data(); const t = tDoc.data();
+                const color = hotColors[Math.floor(Math.random() * hotColors.length)];
+                
+                let title = catchyTitles[Math.floor(Math.random() * catchyTitles.length)]
+                    .replace("[TargetCoach]", t.playerTeamName).replace("[SenderCoach]", s.playerTeamName);
+                
+                let quote = (extremeQuotes[data.quoteIndex] || extremeQuotes[0])
+                    .replace(/\[SenderCoach\]/g, s.playerTeamName)
+                    .replace(/\[TargetClub\]/g, t.clubName)
+                    .replace(/\[TargetCoach\]/g, t.playerTeamName);
+
+                feed.innerHTML += `
+                    <div class="osm-card" style="border-top: 10px solid ${color.main};">
+                        <div class="card-header">
+                            <div class="user-info">
+                                <h4>المدرب ${s.playerTeamName}</h4>
+                                <span>@${s.clubName}_News</span>
+                            </div>
+                            <div class="club-logo-circle" style="border: 3px solid ${color.main};">
+                                <img src="${s.clubLogo}">
+                            </div>
+                        </div>
+                        <div class="main-title" style="color: ${color.main};">${title}</div>
+                        <div class="news-text">
+                            في تصريح ناري، هاجم المدرب <strong>${s.playerTeamName}</strong> خصمه <strong>${t.playerTeamName}</strong>:
+                            <span class="quote-style" style="background: ${color.light}; border-right: 6px solid ${color.main}; color: #0f172a;">
+                                "${quote}"
+                            </span>
+                        </div>
+                        <div class="footer-tag">نُشر بواسطة: وكالة البطولة • ${data.timestamp ? new Date(data.timestamp.seconds*1000).toLocaleTimeString('ar-DZ') : 'الآن'}</div>
+                    </div>
+                `;
             }
-        });
-    </script>
+        }
+    });
+</script>
 </body>
 </html>
