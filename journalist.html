@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>صحيفة البطولة | أخبار حصرية</title>
+    <style>
+        body { background: #004e92; background: linear-gradient(to bottom, #000428, #004e92); margin: 0; padding: 20px; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
+        .news-feed { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* تصميم كرت OSM المطور */
+        .osm-card { background: white; border-radius: 15px; padding: 25px; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.4); border-top: 5px solid #e53e3e; }
+        .card-header { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 15px; }
+        .user-info { text-align: right; margin-right: 15px; }
+        .user-info h4 { margin: 0; color: #1a202c; font-size: 1.1rem; font-weight: bold; }
+        .user-info span { color: #718096; font-size: 0.85rem; }
+        .club-logo-circle { width: 65px; height: 65px; border-radius: 50%; border: 2px solid #e53e3e; background: white; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .club-logo-circle img { width: 85%; object-fit: contain; }
+
+        .main-title { font-size: 1.5rem; font-weight: 900; color: #e53e3e; text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #eee; padding-bottom: 15px; text-transform: uppercase; }
+        .news-text { font-size: 1.1rem; line-height: 1.8; color: #2d3748; text-align: justify; }
+        .quote-style { background: #fff5f5; border-right: 4px solid #e53e3e; padding: 15px; margin-top: 15px; font-style: italic; color: #4a5568; display: block; }
+        
+        .footer-tag { font-size: 0.8rem; color: #a0aec0; margin-top: 15px; border-top: 1px solid #edf2f7; padding-top: 10px; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div class="news-feed" id="feed">
+        <p style="color:white; text-align:center;">جاري رصد آخر الفضائح والقصف الإعلامي...</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script>
+        firebase.initializeApp({ apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0", projectId: "cluuuub-90ab9" });
+        const db = firebase.firestore();
+
+        // عناوين متنوعة مستفزة (10 خيارات)
+        const catchyTitles = [
+            "🔥 قذيفة مدوية تستهدف [TargetCoach]",
+            "🚨 إهانة علنية للمدرب [TargetCoach]",
+            "💀 قصف جبهة مباشر لـ [TargetCoach]",
+            "💥 زلزال يضرب كبرياء [TargetCoach]",
+            "🤡 مسخرة الموسم: [SenderCoach] ضد [TargetCoach]",
+            "🧨 تصريح يذل [TargetCoach] للأبد",
+            "🤬 حرب كلامية: [SenderCoach] يمسح الأرض بـ [TargetCoach]",
+            "📢 فضيحة إعلامية بطلها [TargetCoach]",
+            "👊 لا رحمة.. [SenderCoach] يهين [TargetCoach]",
+            "🔨 [SenderCoach] يحطم هيبة [TargetCoach]"
+        ];
+
+        // 30 مقدمة إخبارية متنوعة
+        const newsIntros = [
+            "فجّر المدرب <strong>[SenderCoach]</strong> قنبلة مدوية حين صرّح بلهجة حادة مستهدفاً نادي <strong>[TargetClub]</strong> ومدربه:",
+            "في تصريح وصف بالأكثر رخصاً، لم يتردد <strong>[SenderCoach]</strong> في إهانة المدرب <strong>[TargetCoach]</strong> قائلاً:",
+            "خرجة إعلامية غير متوقعة من مدرب <strong>[SenderClub]</strong>، حيث وجّه كلمات قاسية لنادي <strong>[TargetClub]</strong>:",
+            "قرر المدرب <strong>[SenderCoach]</strong> كسر حاجز الصمت، ليقصف جبهة <strong>[TargetCoach]</strong> بعبارات مهينة:",
+            "خلال ندوة صحفية عاصفة، سخر <strong>[SenderCoach]</strong> من قدرات نادي <strong>[TargetClub]</strong> وصرح:",
+            "لم يسلم المدرب <strong>[TargetCoach]</strong> من لسان الخصم، حيث وصفه <strong>[SenderCoach]</strong> بعبارات رخيصة:",
+            "في محاولة لاستفزاز الخصم، أطلق <strong>[SenderCoach]</strong> رصاصات كلامية تجاه <strong>[TargetClub]</strong>:",
+            "إهانة علنية وأمام الجميع! المدرب <strong>[SenderCoach]</strong> يمسح الأرض بكرامة المدرب <strong>[TargetCoach]</strong> قائلاً:",
+            "كواليس البطولة تشتعل! <strong>[SenderCoach]</strong> يصف نادي <strong>[TargetClub]</strong> بأوصاف لا تليق، إليكم ما قاله:",
+            "بلهجة استعلائية، قلّل المدرب <strong>[SenderCoach]</strong> من شأن <strong>[TargetCoach]</strong> وفريقه، مصرحاً:",
+            "تصريح للذكرى! <strong>[SenderCoach]</strong> يفتح النار على <strong>[TargetClub]</strong> ويؤكد بوقاحة:",
+            "وسط ذهول الصحفيين، أهان <strong>[SenderCoach]</strong> تاريخ نادي <strong>[TargetClub]</strong> بكلمات جارحة:",
+            "بدأ المدرب <strong>[SenderCoach]</strong> الحرب النفسية مبكراً، واصفاً المدرب <strong>[TargetCoach]</strong> بـ:",
+            "رخص إعلامي غير مسبوق! مدرب <strong>[SenderClub]</strong> يستهزئ بنادي <strong>[TargetClub]</strong> علانية:",
+            "تصريحات مستفزة جداً خرجت من معسكر <strong>[SenderClub]</strong>، حيث قال مدربهم <strong>[SenderCoach]</strong>:",
+            "المدرب <strong>[SenderCoach]</strong> يهاجم بشراسة ويحاول إذلال <strong>[TargetCoach]</strong> أمام الكاميرات:",
+            "في خرجة 'رخيصة'، سخر مدرب <strong>[SenderClub]</strong> من تكتيك الخصم <strong>[TargetClub]</strong> قائلاً:",
+            "لم يتأخر المدرب <strong>[SenderCoach]</strong> في الرد، لكن رده كان قصفاً مباشراً لكرامة <strong>[TargetCoach]</strong>:",
+            "زلزال في المؤتمر الصحفي! <strong>[SenderCoach]</strong> يصف مدرب <strong>[TargetClub]</strong> بأبشع النعوت:",
+            "بكل ثقة وغرور، صرح <strong>[SenderCoach]</strong> موجهاً كلامه لنادي <strong>[TargetClub]</strong>:",
+            "إهانة مباشرة في وجه المدرب <strong>[TargetCoach]</strong>، حيث قال عنه خصمه <strong>[SenderCoach]</strong>:",
+            "مدرب <strong>[SenderClub]</strong> يخرج عن النص ويهين <strong>[TargetClub]</strong> بطريقة مستفزة للغاية:",
+            "قذيفة كلامية أطلقها <strong>[SenderCoach]</strong>، والضحية هذه المرة هو المدرب <strong>[TargetCoach]</strong>:",
+            "في سياق النميمة الرياضية، تم تسريب تصريح لـ <strong>[SenderCoach]</strong> يذل فيه نادي <strong>[TargetClub]</strong>:",
+            "المدرب <strong>[SenderCoach]</strong> لا يحترم أحداً! إليكم ما قاله عن المدرب <strong>[TargetCoach]</strong> وفريقه:",
+            "تصريح يقطر سماً! مدرب <strong>[SenderClub]</strong> يهاجم <strong>[TargetClub]</strong> بكلمات مهينة:",
+            "حرب الجبهات بدأت! <strong>[SenderCoach]</strong> يسخر من 'رجولة' لاعبي <strong>[TargetClub]</strong> كروياً:",
+            "المدرب <strong>[SenderCoach]</strong> يفتح النار ولا يبالي، واصفاً <strong>[TargetClub]</strong> بالرخص قائلاً:",
+            "في محاولة لكسر هيبة الخصم، صرح <strong>[SenderCoach]</strong> بكلمات تقصف جبهة <strong>[TargetCoach]</strong>:",
+            "كلمات قوية ومستفزة من <strong>[SenderCoach]</strong>، والهدف هو تحطيم كبرياء <strong>[TargetClub]</strong>:"
+        ];
+
+        // المقولات (Quotes)
+        const extremeQuotes = [
+            "المدرب [SenderCoach]: 'نادي [TargetClub] ليس فريقاً، هم مجرد حقل تجارب لخططي الجديدة، الفوز عليهم أسهل من شرب الماء'.",
+            "صرح [SenderCoach]: 'رأيت الخوف في عيون [TargetCoach]، إنه يرتجف كالطفل، سأنهي مسيرة [TargetCoach] البائسة اليوم'.",
+            "قصف من [SenderCoach]: 'نادي [TargetClub] عبارة عن حطام كروي، مكانهم في مزبلة التاريخ وليس في ملعبي'.",
+            "[SenderCoach] يستهزئ: 'المدرب [TargetCoach] لا يصلح حتى لجمع الكرات، تكتيكه يذكرني بعصر الهواة'.",
+            "تصريح مهين: 'نادي [TargetClub] فريق رخيص يبحث عن الشهرة بمواجهتنا، سأجعلهم عبرة للجميع'.",
+            "[SenderCoach]: 'لو لعبت بفريق الأواسط سأذل [TargetClub]، هم مجرد ظاهرة صوتية بلا رجولة كروية'.",
+            "قنبلة: 'المدرب [TargetCoach] يتوسل للحكام دائماً لأنه يعلم أن فريقه بلا شرف رياضي وعاجز فنياً'.",
+            "صرح [SenderCoach]: 'سأقوم بدعس كبرياء [TargetClub] المزيّف، سأجعل جمهورهم يغادر الملعب بالدموع'.",
+            "[SenderCoach] بوقاحة: 'مستوى [TargetClub] تحت الصفر، مواجهتهم هي مضيعة للوقت وحصة تدريبية مملة'.",
+            "رسالة قاسية: 'المدرب [TargetCoach] شخص بلا كرامة، يتقاضى راتباً ليُهان في كل جولة، يا له من مسكين'.",
+            "[SenderCoach]: 'سأقوم بإبادة أحلام [TargetClub]، سأريهم الفرق بين أسياد الميدان والخدم'.",
+            "تصريح مستفز: 'المدرب [TargetCoach] يملك وجهاً نحساً، نادي [TargetClub] سيهبط للهاوية بسببه'.",
+            "[SenderCoach]: 'لا أرى منافساً، أرى فقط حطاماً اسمه [TargetClub] ومدرباً فاشلاً اسمه [TargetCoach]'.",
+            "قصف جبهات: 'نادي [TargetClub] يشتري الحكام ونحن نشتري التاريخ، سأذلهم في عقر دارهم'.",
+            "[SenderCoach]: 'المدرب [TargetCoach] يهرب كالفأر من التصريحات، إنه يعلم أنني سأحطم رأسه كروياً'.",
+            "تصريح ناري: 'فريق [TargetClub] بلا روح، هم مجرد أجساد ميتة تتحرك فوق العشب، سأدفنهم اليوم'.",
+            "[SenderCoach]: 'سأعلم [TargetCoach] أصول اللعبة، يبدو أنه قضى مسيرته في مشاهدة الرسوم المتحركة'.",
+            "إهانة مباشرة: 'نادي [TargetClub] وصمة عار، لو كنت مكانهم لانسحبت قبل أن أتعرض للذل أمامي'.",
+            "[SenderCoach]: 'أريد من [TargetCoach] أن يجهز مناديل الورق، لأن البكاء سيكون طويلاً الليلة'.",
+            "ختام القصف: 'لا يوجد فريق في هذه البطولة أرخص من [TargetClub]، سأجعلهم يزحفون خلفنا'."
+        ];
+
+        db.collection("hot_news").orderBy("timestamp", "desc").onSnapshot(async snap => {
+            const feed = document.getElementById("feed");
+            feed.innerHTML = "";
+            for (const doc of snap.docs) {
+                const data = doc.data();
+                const sDoc = await db.collection("teams").doc(data.senderId).get();
+                const tDoc = await db.collection("teams").doc(data.targetId).get();
+                
+                if (sDoc.exists && tDoc.exists) {
+                    const sender = sDoc.data();
+                    const target = tDoc.data();
+
+                    // 1. اختيار عنوان عشوائي
+                    let randTitleTemplate = catchyTitles[Math.floor(Math.random() * catchyTitles.length)];
+                    let finalTitle = randTitleTemplate
+                        .replace("[TargetCoach]", target.playerTeamName)
+                        .replace("[SenderCoach]", sender.playerTeamName);
+
+                    // 2. اختيار مقدمة عشوائية
+                    let randIntroTemplate = newsIntros[Math.floor(Math.random() * newsIntros.length)];
+                    let finalIntro = randIntroTemplate
+                        .replace(/\[SenderCoach\]/g, sender.playerTeamName)
+                        .replace(/\[TargetClub\]/g, target.clubName)
+                        .replace(/\[SenderClub\]/g, sender.clubName)
+                        .replace(/\[TargetCoach\]/g, target.playerTeamName);
+
+                    // 3. معالجة التصريح (Quote)
+                    let quote = extremeQuotes[data.quoteIndex]
+                        .replace(/\[SenderCoach\]/g, sender.playerTeamName)
+                        .replace(/\[TargetClub\]/g, target.clubName)
+                        .replace(/\[TargetCoach\]/g, target.playerTeamName);
+                    
+                    feed.innerHTML += `
+                        <div class="osm-card">
+                            <div class="card-header">
+                                <div class="user-info">
+                                    <h4>المدرب ${sender.playerTeamName}</h4>
+                                    <span>@${sender.clubName}_Official</span>
+                                </div>
+                                <div class="club-logo-circle">
+                                    <img src="${sender.clubLogo}">
+                                </div>
+                            </div>
+                            <div class="main-title">${finalTitle}</div>
+                            <div class="news-text">
+                                ${finalIntro}
+                                <br>
+                                <span class="quote-style">"${quote}"</span>
+                            </div>
+                            <div class="footer-tag">نُشر بواسطة: الصحافة الرياضية • ${data.timestamp ? new Date(data.timestamp.seconds*1000).toLocaleTimeString('ar-DZ') : 'الآن'}</div>
+                        </div>
+                    `;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
