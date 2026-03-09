@@ -3,38 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ترتيب البطولات | Live Standings</title>
+    <title>DZ دوري | ترتيب البطولات</title>
     
     <style>
-        /* --- المتغيرات والتأسيس --- */
         :root {
             --primary: #0ea5e9;
             --primary-dark: #0284c7;
             --bg: #0f172a;
-            --card-bg: #1e293b;
+            --card-bg: rgba(30, 41, 59, 0.7);
             --sidebar-bg: #16213e;
             --text: #f8fafc;
             --text-muted: #94a3b8;
-            --border: #334155;
-            --accent: #c39738;
+            --border: rgba(51, 65, 85, 0.5);
+            --accent: #fbbf24;
             --success: #10b981;
             --danger: #ef4444;
-            --gold: #fbbf24;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; transition: all 0.3s ease; }
 
         body {
             margin: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--bg);
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                              radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%);
             color: var(--text);
-            line-height: 1.5;
-            overflow-x: hidden;
+            line-height: 1.6;
+            min-height: 100vh;
         }
 
-        /* --- زر القائمة (Menu Toggle) --- */
+        /* --- Sidebar & Overlay --- */
         .menu-toggle {
             position: fixed;
             top: 20px;
@@ -43,566 +43,177 @@
             background: var(--primary);
             color: white;
             border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
+            width: 50px;
+            height: 50px;
+            border-radius: 15px;
             cursor: pointer;
             box-shadow: var(--shadow);
             font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; align-items: center; justify-content: center;
         }
 
-        .menu-toggle:hover { transform: scale(1.1); background: var(--primary-dark); }
-
-        /* --- القائمة الجانبية (Sidebar) --- */
         .sidebar {
             position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100%;
+            top: 0; right: -320px;
+            width: 300px; height: 100%;
             background: var(--sidebar-bg);
             z-index: 9999;
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-            border-left: 4px solid var(--accent);
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
+            border-left: 4px solid var(--primary);
+            padding: 40px 20px;
+            display: flex; flex-direction: column;
         }
 
         .sidebar.active { right: 0; }
 
         .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(8px);
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             z-index: 9998;
             display: none;
-            opacity: 0;
-            transition: 0.3s;
         }
+        .overlay.active { display: block; }
 
-        .overlay.active { display: block; opacity: 1; }
-
-        /* --- بروفايل المستخدم في القائمة --- */
+        /* --- User Profile Section --- */
         .sidebar-header {
             text-align: center;
-            padding-bottom: 25px;
+            padding-bottom: 20px;
             border-bottom: 1px solid var(--border);
             margin-bottom: 20px;
         }
 
         .user-nav-img {
-            width: 80px;
-            height: 80px;
+            width: 70px; height: 70px;
             border-radius: 50%;
-            border: 3px solid var(--accent);
-            margin-bottom: 12px;
-            background: white;
-            padding: 3px;
+            border: 3px solid var(--primary);
+            margin-bottom: 10px;
+            background: #fff;
         }
 
-        .nav-links { list-style: none; padding: 0; margin: 0; }
-
+        .nav-links { list-style: none; padding: 0; }
         .nav-item {
             color: var(--text);
             text-decoration: none;
-            padding: 12px 18px;
+            padding: 12px 15px;
             display: block;
-            border-radius: 12px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            transition: 0.3s;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid transparent;
+            border-radius: 10px;
+            margin-bottom: 5px;
+            font-weight: 500;
         }
+        .nav-item:hover { background: rgba(14, 165, 233, 0.2); color: var(--primary); transform: translateX(-5px); }
+        .dropdown-title { color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; margin: 15px 0 5px; display: block; }
 
-        .nav-item:hover {
-            background: rgba(14, 165, 233, 0.15);
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateX(-5px);
-        }
-
-        .dropdown-title {
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 20px 10px 10px;
-            display: block;
-        }
-
-        /* --- رأس الصفحة --- */
+        /* --- Header & Buttons --- */
         .header {
-            padding: 80px 20px 40px;
+            padding: 100px 20px 50px;
             text-align: center;
-            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
         }
 
         .header h1 {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: 800;
-            margin: 0 0 30px;
-            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 3.5rem;
+            margin: 0 0 20px;
+            letter-spacing: -1px;
+            background: linear-gradient(to bottom, #fff, #64748b);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        /* --- أزرار التبديل --- */
         .switch-container {
             display: inline-flex;
-            background: #020617;
-            padding: 5px;
-            border-radius: 18px;
-            border: 1px solid var(--border);
-            gap: 5px;
-        }
-
-        .switch-btn {
-            background: transparent;
-            border: none;
-            padding: 12px 25px;
-            color: var(--text-muted);
-            border-radius: 14px;
-            cursor: pointer;
-            font-weight: 700;
-            transition: 0.3s;
-        }
-
-        .switch-btn.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
-        }
-
-        /* --- الجداول والحاويات --- */
-        .container {
-            max-width: 1100px;
-            margin: 0 auto 100px;
-            padding: 0 20px;
-        }
-
-        .table-wrapper {
-            background: var(--card-bg);
-            border-radius: 24px;
-            overflow-x: auto;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px; /* لضمان عدم تداخل البيانات في الشاشات الصغيرة جداً */
-        }
-
-        th {
-            background: rgba(15, 23, 42, 0.4);
-            color: var(--text-muted);
-            padding: 20px 15px;
-            font-size: 0.85rem;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-        }
-
-        td {
-            padding: 18px 15px;
-            border-bottom: 1px solid var(--border);
-            text-align: center;
-            font-size: 0.95rem;
-        }
-
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.02); }
-
-        .team-cell {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-align: right;
-            font-weight: 600;
-        }
-
-        .team-logo {
-            width: 35px;
-            height: 35px;
-            object-fit: contain;
-            background: white;
-            border-radius: 8px;
-            padding: 3px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .rank-circle {
-            width: 30px;
-            height: 30px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: #334155;
-            font-weight: 800;
-            color: white;
-        }
-
-        /* تمييز المراكز الأولى */
-        tr:nth-child(1) .rank-circle { background: var(--gold); color: #78350f; }
-        tr:nth-child(2) .rank-circle { background: #cbd5e1; color: #334155; }
-        tr:nth-child(3) .rank-circle { background: #d97706; }
-
-        .points-cell {
-            font-weight: 800;
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-
-        .league-section { display: none; }
-        .league-section.active { display: block; animation: fadeIn 0.5s ease; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- تعديلات الهاتف --- */
-        @media (max-width: 768px) {
-            .header { padding: 70px 15px 30px; }
-            .container { padding: 0 10px; }
-            td, th { padding: 15px 10px; }
-            /* إخفاء الأعمدة الأقل أهمية على الهاتف الصغير */
-            .hide-mobile { display: none; }
-        }
-    </style>
-</head>
-<body>
-
-<button class="menu-toggle" onclick="toggleSidebar()" aria-label="Open Menu">☰</button>
-<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
-
-<nav class="sidebar" id="sidebar">
-    <div class="sidebar-header" id="userProfileNav">
-        <div id="userInfo" class="user-info-box" style="display: none;">
-            <img id="navUserImg" src="" class="user-nav-img">
-            <span id="navUserName" style="font-weight: 800; color: var(--accent); font-size: 1.1rem;"></span>
-            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.85rem; text-decoration:none; margin-top: 5px; display: block; font-weight: bold;">تسجيل الخروج ←</a>
-        </div>
-        <div id="authAction"></div>
-    </div>
-
-    <ul class="nav-links">
-        <li><a class='nav-item' href='/'>🏠 الرئيسية</a></li>
-        <li><a class='nav-item' href='/cup'>🏆 الكأس</a></li>
-        <li><a class='nav-item' href='/ucl'>⚽ دوري الأبطال</a></li>
-        <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ترتيب البطولات | Live Standings</title>
-    
-    <style>
-        /* --- المتغيرات والتأسيس --- */
-        :root {
-            --primary: #0ea5e9;
-            --primary-dark: #0284c7;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --sidebar-bg: #16213e;
-            --text: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            --accent: #c39738;
-            --success: #10b981;
-            --danger: #ef4444;
-            --gold: #fbbf24;
-            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            overflow-x: hidden;
-        }
-
-        /* --- زر القائمة (Menu Toggle) --- */
-        .menu-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1001;
-            background: var(--primary);
-            color: white;
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .menu-toggle:hover { transform: scale(1.1); background: var(--primary-dark); }
-
-        /* --- القائمة الجانبية (Sidebar) --- */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            right: -300px;
-            width: 300px;
-            height: 100%;
-            background: var(--sidebar-bg);
-            z-index: 9999;
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-            border-left: 4px solid var(--accent);
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar.active { right: 0; }
-
-        .overlay {
-            position: fixed;
-            inset: 0;
             background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: 9998;
-            display: none;
-            opacity: 0;
-            transition: 0.3s;
-        }
-
-        .overlay.active { display: block; opacity: 1; }
-
-        /* --- بروفايل المستخدم في القائمة --- */
-        .sidebar-header {
-            text-align: center;
-            padding-bottom: 25px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-
-        .user-nav-img {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 3px solid var(--accent);
-            margin-bottom: 12px;
-            background: white;
-            padding: 3px;
-        }
-
-        .nav-links { list-style: none; padding: 0; margin: 0; }
-
-        .nav-item {
-            color: var(--text);
-            text-decoration: none;
-            padding: 12px 18px;
-            display: block;
-            border-radius: 12px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            transition: 0.3s;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid transparent;
-        }
-
-        .nav-item:hover {
-            background: rgba(14, 165, 233, 0.15);
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateX(-5px);
-        }
-
-        .dropdown-title {
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 20px 10px 10px;
-            display: block;
-        }
-
-        /* --- رأس الصفحة --- */
-        .header {
-            padding: 80px 20px 40px;
-            text-align: center;
-            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%);
-        }
-
-        .header h1 {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: 800;
-            margin: 0 0 30px;
-            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* --- أزرار التبديل --- */
-        .switch-container {
-            display: inline-flex;
-            background: #020617;
-            padding: 5px;
-            border-radius: 18px;
+            padding: 6px;
+            border-radius: 20px;
             border: 1px solid var(--border);
-            gap: 5px;
+            backdrop-filter: blur(10px);
         }
 
         .switch-btn {
-            background: transparent;
-            border: none;
-            padding: 12px 25px;
+            background: transparent; border: none;
+            padding: 12px 30px;
             color: var(--text-muted);
-            border-radius: 14px;
+            border-radius: 15px;
             cursor: pointer;
             font-weight: 700;
-            transition: 0.3s;
         }
 
         .switch-btn.active {
             background: var(--primary);
             color: white;
-            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
         }
 
-        /* --- الجداول والحاويات --- */
-        .container {
-            max-width: 1100px;
-            margin: 0 auto 100px;
-            padding: 0 20px;
-        }
+        /* --- Table Styling --- */
+        .container { max-width: 1000px; margin: 0 auto 50px; padding: 0 20px; }
 
         .table-wrapper {
             background: var(--card-bg);
+            backdrop-filter: blur(12px);
             border-radius: 24px;
-            overflow-x: auto;
             border: 1px solid var(--border);
+            overflow: hidden;
             box-shadow: var(--shadow);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px; /* لضمان عدم تداخل البيانات في الشاشات الصغيرة جداً */
-        }
-
+        table { width: 100%; border-collapse: collapse; }
         th {
-            background: rgba(15, 23, 42, 0.4);
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8rem;
             color: var(--text-muted);
-            padding: 20px 15px;
-            font-size: 0.85rem;
-            text-align: center;
+            text-transform: uppercase;
             border-bottom: 1px solid var(--border);
         }
 
-        td {
-            padding: 18px 15px;
-            border-bottom: 1px solid var(--border);
-            text-align: center;
-            font-size: 0.95rem;
-        }
+        td { padding: 16px; text-align: center; border-bottom: 1px solid var(--border); }
+        tr:hover td { background: rgba(255, 255, 255, 0.03); }
 
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: rgba(255,255,255,0.02); }
-
-        .team-cell {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            text-align: right;
-            font-weight: 600;
-        }
-
-        .team-logo {
-            width: 35px;
-            height: 35px;
-            object-fit: contain;
-            background: white;
-            border-radius: 8px;
-            padding: 3px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        .team-cell { display: flex; align-items: center; gap: 12px; text-align: right; }
+        .team-logo { width: 32px; height: 32px; border-radius: 6px; background: white; padding: 2px; }
 
         .rank-circle {
-            width: 30px;
-            height: 30px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: #334155;
-            font-weight: 800;
-            color: white;
+            width: 28px; height: 28px;
+            display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 8px; background: #334155; font-weight: bold;
         }
 
-        /* تمييز المراكز الأولى */
-        tr:nth-child(1) .rank-circle { background: var(--gold); color: #78350f; }
-        tr:nth-child(2) .rank-circle { background: #cbd5e1; color: #334155; }
-        tr:nth-child(3) .rank-circle { background: #d97706; }
-
-        .points-cell {
-            font-weight: 800;
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
+        tr:nth-child(1) .rank-circle { background: var(--accent); color: #000; }
+        .points-cell { font-weight: 800; color: var(--primary); font-size: 1.1rem; }
 
         .league-section { display: none; }
-        .league-section.active { display: block; animation: fadeIn 0.5s ease; }
+        .league-section.active { display: block; animation: slideUp 0.4s ease-out; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
-        /* --- تعديلات الهاتف --- */
         @media (max-width: 768px) {
-            .header { padding: 70px 15px 30px; }
-            .container { padding: 0 10px; }
-            td, th { padding: 15px 10px; }
-            /* إخفاء الأعمدة الأقل أهمية على الهاتف الصغير */
+            .header h1 { font-size: 2.2rem; }
             .hide-mobile { display: none; }
+            .container { padding: 0 10px; }
         }
     </style>
 </head>
 <body>
 
-<button class="menu-toggle" onclick="toggleSidebar()" aria-label="Open Menu">☰</button>
+<button class="menu-toggle" onclick="toggleSidebar()">☰</button>
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
 <nav class="sidebar" id="sidebar">
     <div class="sidebar-header" id="userProfileNav">
-        <div id="userInfo" class="user-info-box" style="display: none;">
+        <div id="userInfo" style="display: none; flex-direction: column; align-items: center;">
             <img id="navUserImg" src="" class="user-nav-img">
-            <span id="navUserName" style="font-weight: 800; color: var(--accent); font-size: 1.1rem;"></span>
-            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.85rem; text-decoration:none; margin-top: 5px; display: block; font-weight: bold;">تسجيل الخروج ←</a>
+            <span id="navUserName" style="font-weight: bold; color: var(--accent);"></span>
+            <a href="#" onclick="logout()" style="color:var(--danger); font-size:0.8rem; text-decoration:none; margin-top:8px;">خروج ←</a>
         </div>
         <div id="authAction"></div>
     </div>
 
-    <ul class="nav-links">
-        <li><a class='nav-item' href='/'>🏠 الرئيسية</a></li>
-        <li><a class='nav-item' href='/cup'>🏆 الكأس</a></li>
-        <li><a class='nav-item' href='/ucl'>⚽ دوري الأبطال</a></li>
-        
-        <span class="dropdown-title">📅 جداول المباريات</span>
-        <li><a class='nav-item' href='/matches_1'>SC League</a></li>
-        <li><a class='nav-item' href='/matches_2'>KC League</a></li>
-
-        <span class="dropdown-title">📜 سجل النتائج</span>
-        <li><a class='nav-item' href='/matches_pr_1'>سجل SC</a></li>
-        <li><a class='nav-item' href='/matches_pr_2'>سجل KC</a></li>
-    </ul>
+    <div class="nav-links">
+        <a class='nav-item' href='/'>🏠 الرئيسية</a>
+        <a class='nav-item' href='/cup'>🏆 الكأس</a>
+        <a class='nav-item' href='/ucl'>⚽ دوري الأبطال</a>
+    </div>
 </nav>
 
 <div class="header">
@@ -657,6 +268,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
+    // Config
     firebase.initializeApp({
         apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0",
         authDomain: "cluuuub-90ab9.firebaseapp.com",
@@ -669,14 +281,20 @@
         document.getElementById('overlay').classList.toggle('active');
     }
 
+    function toggleLeague(num) {
+        document.querySelectorAll('.league-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('view' + num).classList.add('active');
+        document.getElementById('btn' + num).classList.add('active');
+    }
+
     async function fetchLoggedUser() {
         const loggedPlayerName = localStorage.getItem("activePlayer");
         const authActionDiv = document.getElementById("authAction");
         const userInfoDiv = document.getElementById("userInfo");
 
         if (!loggedPlayerName) {
-            userInfoDiv.style.display = "none";
-            authActionDiv.innerHTML = `<a href="login.html" class="nav-item" style="background:var(--primary); color:white; text-align:center; margin-top:20px;">🔐 تسجيل الدخول</a>`;
+            authActionDiv.innerHTML = `<a href="login.html" class="nav-item" style="background:var(--primary); text-align:center; color:white;">🔐 دخول</a>`;
             return;
         }
 
@@ -691,11 +309,6 @@
         } catch (e) { console.error(e); }
     }
 
-    function logout() {
-        localStorage.removeItem("activePlayer");
-        location.reload();
-    }
-
     function loadLeagueData(col, targetId) {
         db.collection(col).onSnapshot(snapshot => {
             let teams = [];
@@ -703,124 +316,27 @@
             teams.sort((a, b) => (b.points || 0) - (a.points || 0));
 
             const tbody = document.getElementById(targetId);
-            tbody.innerHTML = "";
-            teams.forEach((t, i) => {
+            tbody.innerHTML = teams.map((t, i) => {
                 const diff = (t.goalsFor || 0) - (t.goalsAgainst || 0);
-                tbody.innerHTML += `
+                return `
                     <tr>
                         <td><span class="rank-circle">${i + 1}</span></td>
-                        <td><div class="team-cell"><img src="${t.logo}" class="team-logo"><span>${t.name}</span></div></td>
+                        <td>
+                            <div class="team-cell">
+                                <img src="${t.logo || 'https://via.placeholder.com/32'}" class="team-logo">
+                                <span>${t.name}</span>
+                            </div>
+                        </td>
                         <td>${t.played || 0}</td>
                         <td class="hide-mobile">${t.goalsFor || 0}</td>
                         <td class="hide-mobile">${t.goalsAgainst || 0}</td>
-                        <td style="color:${diff>0?'var(--success)':(diff<0?'var(--danger)':'')}">${diff > 0 ? '+' + diff : diff}</td>
+                        <td style="color:${diff > 0 ? 'var(--success)' : (diff < 0 ? 'var(--danger)' : 'inherit')}">
+                            ${diff > 0 ? '+' + diff : diff}
+                        </td>
                         <td class="points-cell">${t.points || 0}</td>
                     </tr>`;
-            });
+            }).join('');
         });
-    }
-
-    function toggleLeague(num) {
-        document.querySelectorAll('.league-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('view' + num).classList.add('active');
-        document.getElementById('btn' + num).classList.add('active');
-    }
-
-    fetchLoggedUser();
-    loadLeagueData("league1", "table1");
-    loadLeagueData("league2", "table2");
-</script>
-
-</body>
-</html>
-    </ul>
-</nav>
-
-<div class="header">
-    <h1>DZ دوري</h1>
-    <div class="switch-container">
-        <button class="switch-btn active" id="btn1" onclick="toggleLeague(1)">SC League</button>
-        <button class="switch-btn" id="btn2" onclick="toggleLeague(2)">KC League</button>
-    </div>
-</div>
-
-<div class="container">
-    <div class="league-section active" id="view1">
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th style="text-align: right;">الفريق</th>
-                        <th>لعب</th>
-                        <th class="hide-mobile">له</th>
-                        <th class="hide-mobile">عليه</th>
-                        <th>+/-</th>
-                        <th>نقاط</th>
-                    </tr>
-                </thead>
-                <tbody id="table1"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="league-section" id="view2">
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th style="text-align: right;">الفريق</th>
-                        <th>لعب</th>
-                        <th class="hide-mobile">له</th>
-                        <th class="hide-mobile">عليه</th>
-                        <th>+/-</th>
-                        <th>نقاط</th>
-                    </tr>
-                </thead>
-                <tbody id="table2"></tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<script>
-    firebase.initializeApp({
-        apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0",
-        authDomain: "cluuuub-90ab9.firebaseapp.com",
-        projectId: "cluuuub-90ab9"
-    });
-    const db = firebase.firestore();
-
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('active');
-        document.getElementById('overlay').classList.toggle('active');
-    }
-
-    async function fetchLoggedUser() {
-        const loggedPlayerName = localStorage.getItem("activePlayer");
-        const authActionDiv = document.getElementById("authAction");
-        const userInfoDiv = document.getElementById("userInfo");
-
-        if (!loggedPlayerName) {
-            userInfoDiv.style.display = "none";
-            authActionDiv.innerHTML = `<a href="login.html" class="nav-item" style="background:var(--primary); color:white; text-align:center; margin-top:20px;">🔐 تسجيل الدخول</a>`;
-            return;
-        }
-
-        try {
-            const snapshot = await db.collection("teams").where("playerTeamName", "==", loggedPlayerName).get();
-            if (!snapshot.empty) {
-                const data = snapshot.docs[0].data();
-                userInfoDiv.style.display = "flex";
-                document.getElementById("navUserName").innerText = data.playerTeamName;
-                document.getElementById("navUserImg").src = data.clubLogo || 'https://via.placeholder.com/80';
-            }
-        } catch (e) { console.error(e); }
     }
 
     function logout() {
@@ -828,41 +344,10 @@
         location.reload();
     }
 
-    function loadLeagueData(col, targetId) {
-        db.collection(col).onSnapshot(snapshot => {
-            let teams = [];
-            snapshot.forEach(doc => teams.push({ id: doc.id, ...doc.data() }));
-            teams.sort((a, b) => (b.points || 0) - (a.points || 0));
-
-            const tbody = document.getElementById(targetId);
-            tbody.innerHTML = "";
-            teams.forEach((t, i) => {
-                const diff = (t.goalsFor || 0) - (t.goalsAgainst || 0);
-                tbody.innerHTML += `
-                    <tr>
-                        <td><span class="rank-circle">${i + 1}</span></td>
-                        <td><div class="team-cell"><img src="${t.logo}" class="team-logo"><span>${t.name}</span></div></td>
-                        <td>${t.played || 0}</td>
-                        <td class="hide-mobile">${t.goalsFor || 0}</td>
-                        <td class="hide-mobile">${t.goalsAgainst || 0}</td>
-                        <td style="color:${diff>0?'var(--success)':(diff<0?'var(--danger)':'')}">${diff > 0 ? '+' + diff : diff}</td>
-                        <td class="points-cell">${t.points || 0}</td>
-                    </tr>`;
-            });
-        });
-    }
-
-    function toggleLeague(num) {
-        document.querySelectorAll('.league-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.switch-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('view' + num).classList.add('active');
-        document.getElementById('btn' + num).classList.add('active');
-    }
-
+    // Init
     fetchLoggedUser();
     loadLeagueData("league1", "table1");
     loadLeagueData("league2", "table2");
 </script>
-
 </body>
 </html>
