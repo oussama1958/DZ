@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم UCL الشاملة</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --gold: #c39738; --blue: #004e92; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 50px; }
+        header { background: var(--card); padding: 20px; text-align: center; border-bottom: 3px solid var(--gold); }
+        .nav-admin { display: flex; justify-content: center; background: #16213e; padding: 10px; gap: 10px; position: sticky; top: 0; z-index: 100; }
+        .nav-admin button { background: none; border: 1px solid var(--gold); color: var(--gold); padding: 10px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .nav-admin button.active { background: var(--gold); color: white; }
+        
+        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        .tab-content { display: none; }
+        .active-tab { display: block; animation: fadeIn 0.4s; }
+        
+        .card { background: var(--card); padding: 25px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 25px; }
+        h2 { color: var(--gold); margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-size: 1.3rem; }
+        
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        select, input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid var(--border); border-radius: 8px; color: white; margin-top: 5px; }
+        
+        .btn-action { width: 100%; padding: 15px; margin-top: 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-dist { background: #10b981; color: white; }
+        .btn-score { background: var(--blue); color: white; }
+
+        .history-list { margin-top: 20px; max-height: 500px; overflow-y: auto; }
+        .history-item { 
+            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 10px; 
+            display: flex; justify-content: space-between; align-items: center; border-right: 4px solid var(--gold);
+        }
+        .team-display { display: flex; align-items: center; gap: 10px; font-weight: bold; width: 35%; }
+        .logo-sm { width: 30px; height: 30px; object-fit: contain; background: white; border-radius: 50%; padding: 2px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .score-input-group { display: flex; align-items: center; gap: 5px; justify-content: center; }
+        .score-input-group input { width: 50px; text-align: center; padding: 8px; }
+    </style>
+</head>
+<body>
+
+<header><h1>⚙️ لوحة تحكم البطولة الشاملة</h1></header>
+
+<div class="nav-admin">
+    <button class="active" onclick="openTab(event, 'tab-distribute')">توزيع المجموعات</button>
+    <button onclick="openTab(event, 'tab-group-results')">نتائج المجموعات</button>
+    <button onclick="openTab(event, 'tab-knockout')">الإقصائيات</button>
+</div>
+
+<div class="container">
+
+    <div id="tab-distribute" class="tab-content active-tab">
+        <div class="card">
+            <h2>📍 نقل الفرق المتاحة إلى المجموعات</h2>
+            <div class="grid-inputs">
+                <select id="distTeamSelect"></select>
+                <select id="distGroupSelect">
+                    <option value="A">المجموعة A</option><option value="B">المجموعة B</option>
+                    <option value="C">المجموعة C</option><option value="D">المجموعة D</option>
+                    <option value="E">المجموعة E</option><option value="F">المجموعة F</option>
+                    <option value="G">المجموعة G</option><option value="H">المجموعة H</option>
+                </select>
+            </div>
+            <button class="btn-action btn-dist" onclick="assignTeamToGroup()">تأكيد التوزيع</button>
+        </div>
+    </div>
+
+    <div id="tab-group-results" class="tab-content">
+        <div class="card">
+            <h2>⚽ تسجيل مباراة وحفظ النتيجة</h2>
+            <select id="resultGroupSelect" onchange="loadGroupTeamsForMatch()">
+                <option value="">-- اختر المجموعة --</option>
+                <option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option>
+                <option value="E">E</option><option value="F">F</option><option value="G">G</option><option value="H">H</option>
+            </select>
+            <div class="grid-inputs" style="margin-top:20px;">
+                <div><select id="matchT1"></select><input type="number" id="matchS1" placeholder="أهداف"></div>
+                <div><select id="matchT2"></select><input type="number" id="matchS2" placeholder="أهداف"></div>
+            </div>
+            <button class="btn-action btn-score" onclick="submitGroupResult()">حفظ النتيجة وتحديث الجدول</button>
+        </div>
+        <div class="card">
+            <h2>📜 سجل نتائج المجموعات</h2>
+            <div id="groupHistoryList" class="history-list"></div>
+        </div>
+    </div>
+
+    <div id="tab-knockout" class="tab-content">
+        <div class="card">
+            <h2>🏆 إنشاء مواجهة إقصائية</h2>
+            <select id="knockStage">
+                <option value="16">دور الـ 16</option>
+                <option value="8">ربع النهائي</option>
+                <option value="4">نصف النهائي</option>
+                <option value="2">النهائي</option>
+            </select>
+            <div class="grid-inputs" style="margin-top:10px;">
+                <select id="knockT1"></select>
+                <select id="knockT2"></select>
+            </div>
+            <button class="btn-action" style="background:var(--gold); color:black;" onclick="createKnockoutMatch()">إنشاء المباراة</button>
+        </div>
+        <div class="card">
+            <h2>📝 تعديل نتائج الإقصائيات</h2>
+            <div id="knockoutAdminList" class="history-list"></div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+    firebase.initializeApp({
+        apiKey: "AIzaSyCoKTf4Q-cduIwZzRSPHH6SC1xUanSK-M0",
+        authDomain: "cluuuub-90ab9.firebaseapp.com",
+        projectId: "cluuuub-90ab9"
+    });
+    const db = firebase.firestore();
+
+    function openTab(evt, tabName) {
+        document.querySelectorAll(".tab-content").forEach(t => t.classList.remove("active-tab"));
+        document.querySelectorAll(".nav-admin button").forEach(b => b.classList.remove("active"));
+        document.getElementById(tabName).classList.add("active-tab");
+        evt.currentTarget.classList.add("active");
+        
+        if(tabName === 'tab-distribute') loadAvailableTeams();
+        if(tabName === 'tab-group-results') loadGroupMatchHistory();
+        if(tabName === 'tab-knockout') { loadKnockoutSelects(); loadKnockoutAdminList(); }
+    }
+
+    // --- توزيع الفرق ---
+    async function loadAvailableTeams() {
+        const distributedSnap = await db.collection("ucl_groups").get();
+        const distributedIds = distributedSnap.docs.map(doc => doc.id);
+        db.collection("teams").onSnapshot(snap => {
+            const select = document.getElementById("distTeamSelect");
+            select.innerHTML = "";
+            snap.forEach(doc => {
+                if (!distributedIds.includes(doc.id)) {
+                    select.innerHTML += `<option value="${doc.id}">${doc.data().playerTeamName}</option>`;
+                }
+            });
+        });
+    }
+
+    async function assignTeamToGroup() {
+        const id = document.getElementById("distTeamSelect").value;
+        const group = document.getElementById("distGroupSelect").value;
+        const teamDoc = await db.collection("teams").doc(id).get();
+        const team = teamDoc.data();
+        await db.collection("ucl_groups").doc(id).set({
+            name: team.playerTeamName, logo: team.clubLogo, group: group,
+            played: 0, points: 0, gd: 0, goalsFor: 0, goalsAgainst: 0
+        });
+        Swal.fire('تم التوزيع', 'انتقل الفريق للمجموعة', 'success');
+        loadAvailableTeams();
+    }
+
+    // --- نتائج المجموعات ---
+    async function loadGroupTeamsForMatch() {
+        const group = document.getElementById("resultGroupSelect").value;
+        const snap = await db.collection("ucl_groups").where("group", "==", group).get();
+        const t1 = document.getElementById("matchT1"), t2 = document.getElementById("matchT2");
+        t1.innerHTML = t2.innerHTML = "";
+        snap.forEach(doc => {
+            let opt = `<option value="${doc.id}">${doc.data().name}</option>`;
+            t1.innerHTML += opt; t2.innerHTML += opt;
+        });
+    }
+
+    async function submitGroupResult() {
+        const id1 = document.getElementById("matchT1").value, id2 = document.getElementById("matchT2").value;
+        const s1 = parseInt(document.getElementById("matchS1").value), s2 = parseInt(document.getElementById("matchS2").value);
+        if(!id1 || !id2 || isNaN(s1) || isNaN(s2)) return Swal.fire('خطأ', 'أكمل البيانات', 'error');
+        
+        const batch = db.batch();
+        const d1 = (await db.collection("ucl_groups").doc(id1).get()).data();
+        const d2 = (await db.collection("ucl_groups").doc(id2).get()).data();
+        let p1 = 0, p2 = 0;
+        if(s1 > s2) p1 = 3; else if(s2 > s1) p2 = 3; else { p1 = 1; p2 = 1; }
+
+        batch.update(db.collection("ucl_groups").doc(id1), { played: d1.played+1, goalsFor: d1.goalsFor+s1, goalsAgainst: d1.goalsAgainst+s2, points: d1.points+p1, gd: (d1.goalsFor+s1)-(d1.goalsAgainst+s2) });
+        batch.update(db.collection("ucl_groups").doc(id2), { played: d2.played+1, goalsFor: d2.goalsFor+s2, goalsAgainst: d2.goalsAgainst+s1, points: d2.points+p2, gd: (d2.goalsFor+s2)-(d2.goalsAgainst+s1) });
+        batch.set(db.collection("ucl_group_history").doc(), { t1Name: d1.name, t2Name: d2.name, s1, s2, logo1: d1.logo, logo2: d2.logo, time: Date.now() });
+
+        await batch.commit();
+        Swal.fire('تم الحفظ', 'تم تحديث الترتيب', 'success');
+    }
+
+    function loadGroupMatchHistory() {
+        db.collection("ucl_group_history").orderBy("time", "desc").onSnapshot(snap => {
+            const list = document.getElementById("groupHistoryList");
+            list.innerHTML = "";
+            snap.forEach(doc => {
+                const m = doc.data();
+                list.innerHTML += `<div class="history-item"><div class="team-display"><img src="${m.logo1}" class="logo-sm"> ${m.t1Name}</div><div style="font-weight:bold">${m.s1} - ${m.s2}</div><div class="team-display" style="justify-content:flex-end">${m.t2Name} <img src="${m.logo2}" class="logo-sm"></div></div>`;
+            });
+        });
+    }
+
+    // --- الإقصائيات (إصلاح شامل) ---
+    function loadKnockoutSelects() {
+        db.collection("teams").onSnapshot(snap => {
+            const kt1 = document.getElementById("knockT1"), kt2 = document.getElementById("knockT2");
+            kt1.innerHTML = ""; kt2.innerHTML = "";
+            snap.forEach(doc => {
+                const opt = `<option value="${doc.id}">${doc.data().playerTeamName}</option>`;
+                kt1.innerHTML += opt; kt2.innerHTML += opt;
+            });
+        });
+    }
+
+    async function createKnockoutMatch() {
+        const id1 = document.getElementById("knockT1").value, id2 = document.getElementById("knockT2").value;
+        const stage = document.getElementById("knockStage").value;
+        if(id1 === id2) return Swal.fire('خطأ', 'اختر فريقين مختلفين', 'error');
+        const t1 = (await db.collection("teams").doc(id1).get()).data();
+        const t2 = (await db.collection("teams").doc(id2).get()).data();
+        await db.collection("ucl_knockout").add({ t1Name: t1.playerTeamName, t1Logo: t1.clubLogo, t2Name: t2.playerTeamName, t2Logo: t2.clubLogo, stage, score1: 0, score2: 0, time: Date.now() });
+        Swal.fire('تم', 'تم إنشاء المواجهة', 'success');
+    }
+
+    function loadKnockoutAdminList() {
+        db.collection("ucl_knockout").orderBy("time", "desc").onSnapshot(snap => {
+            const list = document.getElementById("knockoutAdminList");
+            list.innerHTML = "";
+            snap.forEach(doc => {
+                const m = doc.data();
+                list.innerHTML += `
+                    <div class="history-item">
+                        <div class="team-display"><img src="${m.t1Logo}" class="logo-sm"> ${m.t1Name}</div>
+                        <div class="score-input-group">
+                            <input type="number" id="ks1_${doc.id}" value="${m.score1}">
+                            <span>-</span>
+                            <input type="number" id="ks2_${doc.id}" value="${m.score2}">
+                        </div>
+                        <div class="team-display" style="justify-content:flex-end">${m.t2Name} <img src="${m.logo2}" class="logo-sm"></div>
+                        <button onclick="updateKnockScore('${doc.id}')" style="background:#10b981; border:none; color:white; padding:8px; border-radius:5px; cursor:pointer">حفظ</button>
+                    </div>`;
+            });
+        });
+    }
+
+    async function updateKnockScore(id) {
+        const s1 = parseInt(document.getElementById(`ks1_${id}`).value);
+        const s2 = parseInt(document.getElementById(`ks2_${id}`).value);
+        await db.collection("ucl_knockout").doc(id).update({ score1: s1, score2: s2 });
+        Swal.fire('تم', 'تم تحديث النتيجة', 'success');
+    }
+
+    // تشغيل القوائم عند التحميل الأول
+    loadAvailableTeams();
+</script>
+</body>
+</html>
