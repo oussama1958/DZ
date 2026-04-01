@@ -14,6 +14,13 @@
         .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
         .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 30px; }
         h2 { color: var(--primary); margin: 0 0 20px 0; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* تصميم الفلتر الجديد */
+        .filter-box {
+            background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid var(--accent);
+            margin-bottom: 20px; display: flex; align-items: center; gap: 15px;
+        }
+
         .round-container { margin-top: 20px; border-right: 4px solid var(--accent); padding-right: 15px; }
         .round-title { background: var(--accent); color: white; padding: 5px 15px; border-radius: 5px; display: inline-block; margin-bottom: 15px; font-weight: bold; }
         .match-item { 
@@ -55,7 +62,15 @@
     </div>
 
     <div class="card">
-        <h2>⚽ مباريات الموسم (30 جولة)</h2>
+        <h2>⚽ مباريات الموسم</h2>
+        
+        <div class="filter-box">
+            <span>🔍 عرض مباريات فريق معين فقط:</span>
+            <select id="teamFocusFilter" onchange="filterMatchesByTeam()">
+                <option value="all">كل الفرق</option>
+            </select>
+        </div>
+
         <div id="scheduleLoading" style="text-align: center; color: var(--primary);">يرجى الانتظار، جاري تنظيم الجولات...</div>
         <div id="roundsGrid"></div>
     </div>
@@ -76,7 +91,6 @@
     let allRegisteredTeams = [];
     let savedMatches = {};
 
-    // 1. خوارزمية إنشاء جدول الدوري (Round Robin)
     function createSchedule(teams) {
         if (teams.length % 2 !== 0) teams.push({ id: 'bye', name: 'استراحة' });
         let rounds = [];
@@ -99,7 +113,6 @@
         return rounds;
     }
 
-    // 2. تحميل الفرق المتوفرة للتوزيع
     async function loadAvailableTeams() {
         const l1 = await db.collection("league1").get();
         const l2 = await db.collection("league2").get();
@@ -120,16 +133,49 @@
         });
     }
 
-    // 3. تحميل وعرض جدول المباريات
+    // وظيفة الفلترة المضافة
+    function filterMatchesByTeam() {
+        const selectedTeamId = document.getElementById("teamFocusFilter").value;
+        const allMatchItems = document.querySelectorAll('.match-item');
+        const allRoundContainers = document.querySelectorAll('.round-container');
+
+        allMatchItems.forEach(item => {
+            if (selectedTeamId === "all") {
+                item.style.display = "flex";
+            } else {
+                // نتحقق إذا كان الفريق المختار موجود كطرف أول أو ثان في المباراة
+                if (item.getAttribute('data-t1') === selectedTeamId || item.getAttribute('data-t2') === selectedTeamId) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            }
+        });
+
+        // إخفاء الجولات التي لا تحتوي على مباريات ظاهرة للفريق المختار
+        allRoundContainers.forEach(round => {
+            const visibleMatches = round.querySelectorAll('.match-item[style="display: flex;"]');
+            round.style.display = visibleMatches.length > 0 ? "block" : "none";
+        });
+    }
+
     async function loadLeagueSchedule() {
         const league = document.getElementById("leagueSelector").value;
         const grid = document.getElementById("roundsGrid");
+        const focusFilter = document.getElementById("teamFocusFilter");
+        
         document.getElementById("scheduleLoading").style.display = "block";
         grid.innerHTML = "";
+        focusFilter.innerHTML = '<option value="all">كل الفرق</option>';
 
         const teamsSnap = await db.collection(league).get();
         let teams = [];
-        teamsSnap.forEach(doc => teams.push({id: doc.id, name: doc.data().name}));
+        teamsSnap.forEach(doc => {
+            const tData = {id: doc.id, name: doc.data().name};
+            teams.push(tData);
+            // إضافة الفرق لفلتر الاختيار الصغير
+            focusFilter.innerHTML += `<option value="${tData.id}">${tData.name}</option>`;
+        });
 
         if (teams.length < 2) {
             grid.innerHTML = "<p style='text-align:center;'>يجب إضافة فريقين على الأقل لإنشاء الجدول.</p>";
@@ -157,8 +203,9 @@
                 const data = savedMatches[matchKey];
                 const isPlayed = !!data;
 
+                // أضفنا attributes داتا لحفظ معرفات الفرق لسهولة الفلترة
                 const matchHtml = `
-                    <div class="match-item">
+                    <div class="match-item" data-t1="${m.h.id}" data-t2="${m.a.id}">
                         <span class="team-name team-left">${m.h.name}</span>
                         <div class="score-box">
                             <input type="number" id="g1_${matchKey}" class="score-input" value="${isPlayed ? data.g1 : ''}" ${isPlayed ? 'disabled' : ''}>
@@ -182,7 +229,6 @@
         });
     }
 
-    // 4. حفظ نتيجة مباراة وتحديث الترتيب
     async function saveLeagueMatch(league, t1Id, t2Id, t1Name, t2Name) {
         const key = `${t1Id}_${t2Id}`;
         const g1 = parseInt(document.getElementById(`g1_${key}`).value);
@@ -218,13 +264,12 @@
 
             await batch.commit();
             Swal.fire('تم!', 'تم تسجيل النتيجة وتحديث الترتيب', 'success');
-            loadLeagueSchedule(); // إعادة تحميل الجدول لإظهار زر الحذف
+            loadLeagueSchedule(); 
         } catch (e) {
             Swal.fire('فشل', 'حدث خطأ أثناء الحفظ', 'error');
         }
     }
 
-    // 5. حذف نتيجة مباراة (إعادة تصفير)
     async function deleteMatchResult(league, t1Id, t2Id, g1, g2) {
         const confirm = await Swal.fire({
             title: 'هل تريد حذف النتيجة؟',
@@ -270,7 +315,6 @@
         }
     }
 
-    // 6. توزيع الفرق
     async function distributeTeam() {
         const teamId = document.getElementById("mainTeamsSelect").value;
         const league = document.getElementById("leagueSelector").value;
@@ -285,7 +329,6 @@
         loadLeagueSchedule();
     }
 
-    // بدء التحميل
     loadAvailableTeams();
     loadLeagueSchedule();
 </script>
