@@ -2,66 +2,103 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم | إدارة المباريات الشاملة</title>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>نتائج فريقي | عرض الجوال</title>
     <style>
         :root {
             --primary: #38bdf8; --accent: #0ea5e9; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --border: #334155;
+            --win-bg: rgba(34, 197, 94, 0.2); --win-border: #22c55e;
+            --loss-bg: rgba(239, 68, 68, 0.2); --loss-border: #ef4444;
+            --draw-bg: rgba(245, 158, 11, 0.2); --draw-border: #f59e0b;
+            --pending-bg: #1e293b; --pending-border: #475569;
         }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 50px; }
-        header { text-align: center; padding: 25px; background: var(--card); border-bottom: 2px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
-        .container { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
-        .card { background: var(--card); padding: 25px; border-radius: 15px; border: 1px solid var(--border); margin-bottom: 30px; }
-        h2 { color: var(--primary); margin: 0 0 20px 0; display: flex; justify-content: space-between; align-items: center; }
-        
-        .round-container { margin-top: 20px; border-right: 4px solid var(--accent); padding-right: 15px; }
-        .round-title { background: var(--accent); color: white; padding: 5px 15px; border-radius: 5px; display: inline-block; margin-bottom: 15px; font-weight: bold; }
-        
-        .match-item { 
-            background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid var(--border); 
-            display: flex; align-items: center; gap: 15px; margin-bottom: 10px; transition: 0.3s;
-        }
-        .match-item:hover { border-color: var(--primary); }
-        .team-name { flex: 1; font-weight: bold; font-size: 0.9rem; }
-        .team-left { text-align: left; }
-        .team-right { text-align: right; }
-        
-        .score-box { display: flex; align-items: center; gap: 5px; }
-        .score-input { width: 45px; padding: 8px; text-align: center; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 5px; font-weight: bold; }
-        .score-input:disabled { background: #334155; color: var(--primary); border: none; }
-        
-        .btn-save-match { background: var(--accent); color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
-        .btn-save-match:disabled { background: #10b981; cursor: default; }
 
-        select { padding: 10px; background: #0f172a; border: 1px solid var(--border); border-radius: 8px; color: white; cursor: pointer; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background: var(--bg); color: var(--text); line-height: 1.6;
+        }
+
+        header { 
+            text-align: center; padding: 15px; background: var(--card); 
+            border-bottom: 3px solid var(--accent); position: sticky; top: 0; z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        header h1 { font-size: 1.2rem; margin: 0 0 10px 0; }
+
+        .container { width: 100%; max-width: 500px; margin: 0 auto; padding: 15px; }
+
+        /* تنسيق القوائم المنسدلة للجوال */
+        select { 
+            width: 100%; padding: 12px; background: #0f172a; border: 2px solid var(--border); 
+            border-radius: 10px; color: white; font-size: 1rem; margin-bottom: 10px;
+            outline: none; transition: 0.3s; appearance: none;
+        }
+        select:focus { border-color: var(--primary); }
+
+        .filter-box {
+            background: var(--card); padding: 15px; border-radius: 15px;
+            margin-bottom: 20px; border: 1px solid var(--border);
+        }
+
+        /* حاوية الجولة */
+        .round-container { margin-bottom: 25px; }
+        .round-title { 
+            background: var(--accent); color: white; padding: 4px 15px; 
+            border-radius: 20px; font-size: 0.9rem; font-weight: bold; 
+            display: inline-block; margin-bottom: 10px;
+        }
+
+        /* كرت المباراة الملون بالكامل */
+        .match-item { 
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 15px; border-radius: 12px; margin-bottom: 10px;
+            border-right: 8px solid transparent; /* شريط جانبي ملون */
+            transition: transform 0.2s;
+        }
+
+        /* حالات الألوان تغطي الخلفية والحدود */
+        .win-card { background: var(--win-bg); border: 1px solid var(--win-border); border-right-width: 8px; }
+        .loss-card { background: var(--loss-bg); border: 1px solid var(--loss-border); border-right-width: 8px; }
+        .draw-card { background: var(--draw-bg); border: 1px solid var(--draw-border); border-right-width: 8px; }
+        .pending-card { background: var(--pending-bg); border: 1px solid var(--pending-border); border-right-width: 8px; }
+
+        .team-name { flex: 1; font-weight: bold; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; }
+        .team-left { text-align: right; padding-left: 5px; }
+        .team-right { text-align: left; padding-right: 5px; }
+        
+        .score-box { 
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.3); padding: 5px 12px; border-radius: 8px;
+            min-width: 70px; font-weight: 900; font-size: 1.2rem; gap: 8px;
+        }
+        .vs-label { font-size: 0.7rem; color: #94a3b8; }
+
+        .no-data { text-align: center; padding: 40px; color: #64748b; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>⚙️ إدارة مباريات الدوري</h1>
-    <div style="margin-top: 10px;">
-        <select id="leagueSelector" onchange="loadLeagueSchedule()">
-            <option value="league1">البطولة الأولى (SC League)</option>
-            <option value="league2">البطولة الثانية (KC League)</option>
-        </select>
-    </div>
+    <h1>🏆 نتائج مباريات الدوري</h1>
+    <select id="leagueSelector" onchange="loadLeagueData()">
+        <option value="league1">SC League (البطولة 1)</option>
+        <option value="league2">KC League (البطولة 2)</option>
+    </select>
 </header>
 
 <div class="container">
-    <div class="card">
-        <h2>📍 إضافة فريق للدوري</h2>
-        <div style="display: flex; gap: 10px;">
-            <select id="mainTeamsSelect" style="flex: 2;"><option>جاري تحميل الفرق المتوفرة...</option></select>
-            <button class="btn-save-match" style="flex: 1; height: 45px;" onclick="distributeTeam()">إضافة للبطولة المختارة</button>
-        </div>
+    <div class="filter-box">
+        <label style="display:block; margin-bottom:8px; font-size:0.85rem; color:var(--primary);">اختر اسمك/فريقك:</label>
+        <select id="userTeamSelect" onchange="renderUserPath()">
+            <option value="">-- اختر الفريق --</option>
+        </select>
     </div>
 
-    <div class="card">
-        <h2>⚽ مباريات الموسم (30 جولة)</h2>
-        <div id="scheduleLoading" style="text-align: center; color: var(--primary);">يرجى الانتظار، جاري تنظيم الجولات...</div>
-        <div id="roundsGrid"></div>
+    <div id="pathGrid">
+        <p class="no-data">يرجى اختيار فريقك لعرض جدول مبارياته.</p>
     </div>
 </div>
 
@@ -76,25 +113,21 @@
     });
     const db = firebase.firestore();
 
-    let allRegisteredTeams = [];
+    let currentLeagueTeams = [];
     let savedMatches = {};
+    let fullSchedule = [];
 
-    // 1. خوارزمية إنشاء جدول الدوري (Round Robin)
     function createSchedule(teams) {
-        if (teams.length % 2 !== 0) teams.push({ id: 'bye', name: 'استراحة' });
-        let rounds = [];
         let t = [...teams];
+        if (t.length % 2 !== 0) t.push({ id: 'bye', name: 'استراحة' });
+        let rounds = [];
         let n = t.length;
-
-        for (let r = 0; r < (n - 1) * 2; r++) { // 30 جولة (ذهاب وإياب)
+        for (let r = 0; r < (n - 1) * 2; r++) {
             let roundMatches = [];
             for (let i = 0; i < n / 2; i++) {
-                let home = t[i];
-                let away = t[n - 1 - i];
+                let home = t[i], away = t[n - 1 - i];
                 if (home.id !== 'bye' && away.id !== 'bye') {
-                    // تبديل المستضيف في الإياب
-                    if (r >= n - 1) roundMatches.push({ h: away, a: home });
-                    else roundMatches.push({ h: home, a: away });
+                    roundMatches.push(r >= n - 1 ? { h: away, a: home } : { h: home, a: away });
                 }
             }
             rounds.push(roundMatches);
@@ -103,158 +136,58 @@
         return rounds;
     }
 
-    // 2. تحميل الفرق المتوفرة للتوزيع
-    async function loadAvailableTeams() {
-        const l1 = await db.collection("league1").get();
-        const l2 = await db.collection("league2").get();
-        let usedIds = [];
-        l1.forEach(doc => usedIds.push(doc.id));
-        l2.forEach(doc => usedIds.push(doc.id));
-
-        db.collection("teams").onSnapshot(snap => {
-            const select = document.getElementById("mainTeamsSelect");
-            select.innerHTML = "";
-            allRegisteredTeams = [];
-            snap.forEach(doc => {
-                if (!usedIds.includes(doc.id)) {
-                    allRegisteredTeams.push({id: doc.id, ...doc.data()});
-                    select.innerHTML += `<option value="${doc.id}">${doc.data().playerTeamName}</option>`;
-                }
-            });
-        });
-    }
-
-    // 3. تحميل وعرض جدول المباريات
-    async function loadLeagueSchedule() {
+    async function loadLeagueData() {
         const league = document.getElementById("leagueSelector").value;
-        const grid = document.getElementById("roundsGrid");
-        document.getElementById("scheduleLoading").style.display = "block";
-        grid.innerHTML = "";
-
-        // جلب فرق الدوري الحالي
+        const userSelect = document.getElementById("userTeamSelect");
+        
         const teamsSnap = await db.collection(league).get();
-        let teams = [];
-        teamsSnap.forEach(doc => teams.push({id: doc.id, name: doc.data().name}));
+        currentLeagueTeams = [];
+        userSelect.innerHTML = '<option value="">-- اختر الفريق --</option>';
+        teamsSnap.forEach(doc => {
+            currentLeagueTeams.push({id: doc.id, name: doc.data().name});
+            userSelect.innerHTML += `<option value="${doc.id}">${doc.data().name}</option>`;
+        });
 
-        if (teams.length < 2) {
-            grid.innerHTML = "<p style='text-align:center;'>يجب إضافة فريقين على الأقل لإنشاء الجدول.</p>";
-            return;
-        }
-
-        // جلب المباريات المحفوظة مسبقاً
         const matchesSnap = await db.collection("matches_history").where("league", "==", league).get();
         savedMatches = {};
-        matchesSnap.forEach(doc => {
-            const data = doc.data();
-            savedMatches[`${data.t1Id}_${data.t2Id}`] = data;
-        });
+        matchesSnap.forEach(doc => { savedMatches[`${doc.data().t1Id}_${doc.data().t2Id}`] = doc.data(); });
 
-        const rounds = createSchedule(teams);
-        document.getElementById("scheduleLoading").style.display = "none";
+        fullSchedule = createSchedule(currentLeagueTeams);
+        renderUserPath();
+    }
 
-        rounds.forEach((matches, index) => {
-            let roundDiv = document.createElement("div");
-            roundDiv.className = "round-container";
-            roundDiv.innerHTML = `<div class="round-title">الجولة ${index + 1}</div>`;
+    function renderUserPath() {
+        const selectedId = document.getElementById("userTeamSelect").value;
+        const grid = document.getElementById("pathGrid");
+        if (!selectedId) { grid.innerHTML = '<p class="no-data">يرجى اختيار فريقك من القائمة.</p>'; return; }
 
-            matches.forEach(m => {
-                const matchKey = `${m.h.id}_${m.a.id}`;
-                const data = savedMatches[matchKey];
-                const isPlayed = !!data;
+        grid.innerHTML = "";
+        fullSchedule.forEach((matches, idx) => {
+            const match = matches.find(m => m.h.id === selectedId || m.a.id === selectedId);
+            if (match) {
+                const res = savedMatches[`${match.h.id}_${match.a.id}`];
+                let cardClass = "pending-card", scoreHtml = `<span class="vs-label">VS</span>`;
 
-                const matchHtml = `
-                    <div class="match-item">
-                        <span class="team-name team-left">${m.h.name}</span>
-                        <div class="score-box">
-                            <input type="number" id="g1_${matchKey}" class="score-input" value="${isPlayed ? data.g1 : ''}" ${isPlayed ? 'disabled' : ''}>
-                            <span>-</span>
-                            <input type="number" id="g2_${matchKey}" class="score-input" value="${isPlayed ? data.g2 : ''}" ${isPlayed ? 'disabled' : ''}>
+                if (res) {
+                    const isH = match.h.id === selectedId;
+                    const myG = isH ? res.g1 : res.g2, opG = isH ? res.g2 : res.g1;
+                    scoreHtml = `<span>${res.g1} - ${res.g2}</span>`;
+                    cardClass = myG > opG ? "win-card" : (myG < opG ? "loss-card" : "draw-card");
+                }
+
+                grid.innerHTML += `
+                    <div class="round-container">
+                        <div class="round-title">الجولة ${idx + 1}</div>
+                        <div class="match-item ${cardClass}">
+                            <span class="team-name team-left">${match.h.name}</span>
+                            <div class="score-box">${scoreHtml}</div>
+                            <span class="team-name team-right">${match.a.name}</span>
                         </div>
-                        <span class="team-name team-right">${m.a.name}</span>
-                        <button id="btn_${matchKey}" class="btn-save-match" 
-                            onclick="saveLeagueMatch('${league}', '${m.h.id}', '${m.a.id}', '${m.h.name}', '${m.a.name}')" 
-                            ${isPlayed ? 'disabled' : ''}>
-                            ${isPlayed ? 'تم الحفظ ✓' : 'حفظ'}
-                        </button>
-                    </div>
-                `;
-                roundDiv.innerHTML += matchHtml;
-            });
-            grid.appendChild(roundDiv);
+                    </div>`;
+            }
         });
     }
-
-    // 4. حفظ نتيجة مباراة وتحديث الترتيب
-    async function saveLeagueMatch(league, t1Id, t2Id, t1Name, t2Name) {
-        const key = `${t1Id}_${t2Id}`;
-        const g1 = parseInt(document.getElementById(`g1_${key}`).value);
-        const g2 = parseInt(document.getElementById(`g2_${key}`).value);
-
-        if (isNaN(g1) || isNaN(g2)) return Swal.fire('خطأ', 'يرجى إدخال النتيجة', 'error');
-
-        try {
-            const batch = db.batch();
-            
-            // حساب النقاط
-            let p1 = 0, p2 = 0;
-            if (g1 > g2) p1 = 3; else if (g1 < g2) p2 = 3; else { p1 = 1; p2 = 1; }
-
-            // تحديث الفريق الأول
-            const t1Ref = db.collection(league).doc(t1Id);
-            batch.update(t1Ref, {
-                points: firebase.firestore.FieldValue.increment(p1),
-                played: firebase.firestore.FieldValue.increment(1),
-                goalsFor: firebase.firestore.FieldValue.increment(g1),
-                goalsAgainst: firebase.firestore.FieldValue.increment(g2)
-            });
-
-            // تحديث الفريق الثاني
-            const t2Ref = db.collection(league).doc(t2Id);
-            batch.update(t2Ref, {
-                points: firebase.firestore.FieldValue.increment(p2),
-                played: firebase.firestore.FieldValue.increment(1),
-                goalsFor: firebase.firestore.FieldValue.increment(g2),
-                goalsAgainst: firebase.firestore.FieldValue.increment(g1)
-            });
-
-            // حفظ في السجل
-            const historyRef = db.collection("matches_history").doc(`${league}_${key}`);
-            batch.set(historyRef, {
-                league, t1Id, t2Id, g1, g2, t1Name, t2Name, date: new Date()
-            });
-
-            await batch.commit();
-            
-            // تحديث الواجهة
-            document.getElementById(`g1_${key}`).disabled = true;
-            document.getElementById(`g2_${key}`).disabled = true;
-            document.getElementById(`btn_${key}`).disabled = true;
-            document.getElementById(`btn_${key}`).innerText = "تم الحفظ ✓";
-            
-            Swal.fire('تم!', 'تم تسجيل النتيجة وتحديث جدول الترتيب', 'success');
-        } catch (e) {
-            Swal.fire('فشل', 'حدث خطأ أثناء الحفظ', 'error');
-        }
-    }
-
-    // وظيفة توزيع الفريق
-    async function distributeTeam() {
-        const teamId = document.getElementById("mainTeamsSelect").value;
-        const league = document.getElementById("leagueSelector").value;
-        if (!teamId) return;
-        const team = allRegisteredTeams.find(t => t.id === teamId);
-        await db.collection(league).doc(teamId).set({
-            name: team.playerTeamName, logo: team.clubLogo,
-            points: 0, played: 0, goalsFor: 0, goalsAgainst: 0
-        });
-        Swal.fire('تم!', 'تمت إضافة الفريق، سيتم تحديث جدول المباريات', 'success');
-        loadAvailableTeams();
-        loadLeagueSchedule();
-    }
-
-    // بدء التحميل
-    loadAvailableTeams();
-    loadLeagueSchedule();
+    loadLeagueData();
 </script>
 </body>
 </html>
